@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "EXT_STATS_UPDATE") {
     
     chrome.storage.local.set({ gameStats: request.data }, () => {
-      console.log('Stats saved!', request.data);
+      console.log('Stats saved! ', request.data);
     });
     notifyPopups(request.data);
   }
