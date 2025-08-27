@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Demon Assist Tool",
+  "version": "1.0",
+  "description": "An extension that provides different tools for the Demonic Scans game.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "demon-logo.png"
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://demonicscans.org/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  }
+}
