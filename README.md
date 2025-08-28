@@ -27,9 +27,15 @@
 ###
 
 - Sidebar
-- Monster filters
-- Claim Loot from Waves with "Insta" (requires the user id)
-- "Continue the battle" monsters first in list
+- Wave page
+  - Claim Loot from Waves with "Insta" (requires the user id)
+  - "Continue the battle" monsters first in list
+  - TODO: Notification on loot error,etc
+  - TODO: Gate info hidden by default and clicking Gate Header shows it
+- Battle page
+  - Reduced monster size and centered text
+  - TODO: Total own damage dealt (client side tracking)
+  - TODO Possible loot dinamic unlock (currently game requires refresh to show if you unlocked it)
 
 ###
 

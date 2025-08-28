@@ -5,6 +5,7 @@ const userId = '40923'
 const extensionPageHandlers = {
   '/active_wave.php': initWaveMods,
   '/game_dash.php': initDashboardTools,
+  '/battle.php': initBattleMods,
   // more pages here with their handlers
 };
 
@@ -16,6 +17,13 @@ function initWaveMods() {
 
 function initDashboardTools() {
   console.log("Initializing dashboard tools");
+}
+
+// TODO
+function initBattleMods(){
+  initReducedImageSize()
+  initPossibleLootReached()
+  initTotalOwnDamage()
 }
 
 // MAIN INIT AND CHECKS
@@ -355,11 +363,11 @@ function createFilterUI(monsterList, settings) {
     display: flex;
     gap: 10px;
     align-items: center;
+    justify-content: center;
   `;
   
   // Add filter HTML
   filterContainer.innerHTML = `
-    <strong style="color: #cba6f7;">Monster Filters:</strong>
     <input type="text" id="monster-name-filter" placeholder="Filter by name" 
            style="padding: 5px; background: #1e1e2e; color: #cdd6f4; border: 1px solid #45475a;">
     <label style="display: flex; align-items: center; gap: 5px;">
@@ -506,4 +514,14 @@ function initContinueBattleFirst(){
   })
 }
 
-
+function initReducedImageSize(){
+  document.getElementById('monsterImage').style.maxHeight="400px";
+  document.querySelector('.content-area > .panel').style.justifyItems="center";
+  document.querySelector('.hp-bar').style.justifySelf="normal";
+}
+function initPossibleLootReached(){
+  //TODO
+}
+function initTotalOwnDamage(){
+  //TODO
+}
