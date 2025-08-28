@@ -1,4 +1,3 @@
-
 const userId = '40923'
 
 // Page-specific functionality mapping
