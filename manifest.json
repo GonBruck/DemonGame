@@ -15,7 +15,18 @@
   "host_permissions": [
     "https://demonicscans.org/*"
   ],
+  "content_scripts": [
+    {
+      "matches": ["https://demonicscans.org/*"],
+      "js": ["content-script.js"],
+      "css": ["styles.css"]
+    }
+  ],
   "background": {
     "service_worker": "service-worker.js"
-  }
+  },
+  "web_accessible_resources": [{
+    "resources": ["styles.css"],
+    "matches": ["https://demonicscans.org/*"]
+  }]
 }
