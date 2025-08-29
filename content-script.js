@@ -1,4 +1,15 @@
-const userId = '40923'
+// Automatic retrieval of userId from cookie
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+const userId = getCookie('demon');
+if(!userId){
+  console.log("Error retrieving user id, check if you are logged in")
+  console.log("Error retrieving user id, check if you are logged in")
+  console.log("Error retrieving user id, check if you are logged in")
+}
 
 // Page-specific functionality mapping
 // This would be usefull if i add stuff to specific pages
