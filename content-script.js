@@ -71,9 +71,11 @@ function initSideBar(){
       <li><a href="blacksmith.php"><img src="images/menu/compressed_crafting.webp" alt="Blacksmith"> Blacksmith</a></li>
       <li><a href="merchant.php"><img src="images/menu/compressed_merchant.webp" alt="Merchant"> Merchant</a></li>
       <li><a href="achievements.php"><img src="images/menu/compressed_achievments.webp" alt="Achievements"> Achievements</a></li>
-      <li><a href="guide.php"><img src="images/menu/compressed_guide.webp" alt="Guide"> How To Play</a></li>
+      <li><a href="collections.php"><img src="images/menu/compressed_achievments.webp" alt="Collections"> Collections</a></li>
+      <li><a href="guide.php"><img src="images/menu/compressed_collections.webp" alt="Collections"> How To Play</a></li>
       <li><a href="weekly.php"><img src="images/menu/weekly_leaderboard.webp" alt="Leaderboard"> Weekly Leaderboard</a></li>
       <li><a href="chat.php"><img src="images/menu/compressed_chat.webp" alt="Chat"> Global Chat</a></li>
+      <li><a href="patches.php"><img src="images/menu/compressed_patches.webp" alt="PatchNotes"> Patch Notes</a></li>
       <li><a href="index.php"><img src="images/menu/compressed_manga.webp" alt="Manga"> Manga-Manhwa-Manhua</a></li>
     </ul>
   `;
