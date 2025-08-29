@@ -32,3 +32,38 @@
   gap: 5px;
   color: #cdd6f4;
 }
+
+/* Gate Info Collapsible Styles */
+.collapsible-header {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.collapsible-header::after {
+  content: '▼';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+  font-size: 0.8em;
+}
+
+.collapsible-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  max-height: 1000px; /* Adjust based on content height */
+  opacity: 1;
+}
+
+.collapsible-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Ensure smooth collapsing without affecting layout */
+.gate-info-scroll {
+  display: block;
+}

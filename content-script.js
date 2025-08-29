@@ -10,6 +10,7 @@ const extensionPageHandlers = {
 };
 
 function initWaveMods() {
+  initGateCollapse()
   initMonsterFilter()
   initInstaLoot()
   initContinueBattleFirst()
@@ -41,7 +42,7 @@ if (document.querySelector('.game-topbar')) {
     //initStatsTracker();
     // same for this this styles, it injects a styles.css, not using it much
     // but left here as example
-    //injectStyles();
+    injectStyles();
     initPageSpecificFunctionality()
   }
 }
@@ -518,6 +519,40 @@ function showNotification(msg, type = 'success') {
 }
 //#endregion
 
+//#region Gate info collapsed
+function initGateCollapse() {
+  const gateInfo = document.querySelector('.gate-info');
+  const header = gateInfo.querySelector('.gate-info-header');
+  const scrollContent = gateInfo.querySelector('.gate-info-scroll');
+  
+  if (!header || !scrollContent) return;
+  
+  header.classList.add('collapsible-header');
+  scrollContent.classList.add('collapsible-content');
+  scrollContent.classList.toggle('collapsed')
+  
+  header.addEventListener('click', function() {
+    scrollContent.classList.toggle('collapsed');
+    
+    /*
+    // Save the collapsed state
+    const isCollapsed = scrollContent.classList.contains('collapsed');
+    chrome.storage.local.set({ 
+      gateInfoCollapsed: isCollapsed 
+    });
+    */
+  });
+  
+  /*
+  // Load saved collapsed state
+  chrome.storage.local.get(['gateInfoCollapsed'], (result) => {
+    if (result.gateInfoCollapsed) {
+      scrollContent.classList.add('collapsed');
+    }
+  });
+  */
+}
+//#endregion
 
 function initContinueBattleFirst(){
   document.querySelectorAll('.monster-card').forEach(x=>{
