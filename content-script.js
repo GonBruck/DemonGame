@@ -446,6 +446,7 @@ function minimizeCards(){
 //#region Loot in wave page
 function initInstaLoot(){
   if(!document.getElementById('lootModal')){
+    
     var modal = document.createElement('div');
     modal.innerHTML = `<div id="lootModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#2a2a3d; border-radius:12px; padding:20px; max-width:90%; width:400px; text-align:center; color:white; overflow-y:auto; max-height:80%;">
@@ -455,7 +456,10 @@ function initInstaLoot(){
         <button class="join-btn" onclick="document.getElementById('lootModal').style.display='none'" style="margin-top:10px;">Close</button>
     </div>
 </div>`
-    document.querySelector('.content-area').appendChild(modal.firstElementChild)
+    var notif = document.createElement('div');
+    notif.style = `position: fixed; top: 50vh; right: 40vw;background: #2ecc71;color: white;padding: 12px 20px;border-radius: 10px;box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);font-size: 15px;display: none;z-index: 9999;`
+    notif.id = "notification";
+    document.querySelector('.content-area').appendChild(modal.firstElementChild).parentNode.appendChild(notif)
   }
 
   document.querySelectorAll('.monster-card > a').forEach(x=>{ 
@@ -495,13 +499,22 @@ function lootWave(monsterId){
 
         document.getElementById('lootModal').style.display = 'flex';
     } else {
-        showNotification2(data.message || 'Failed to loot.', 'error');
+        showNotification(data.message || 'Failed to loot.', 'error');
     }
 })
-.catch(() => showNotification2("Server error", 'error'));
+.catch(() => showNotification("Server error", 'error'));
 }
 function showNotification2(err){
   console.log('Error:',err);
+}
+function showNotification(msg, type = 'success') {
+  const note = document.getElementById('notification');
+  note.innerHTML = msg;
+  note.style.background = type === 'error' ? '#e74c3c' : '#2ecc71';
+  note.style.display = 'block';
+  setTimeout(() => {
+      note.style.display = 'none';
+  }, 3000);
 }
 //#endregion
 

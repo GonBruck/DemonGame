@@ -30,7 +30,7 @@
 - Wave page
   - Claim Loot from Waves with "Insta" (requires the user id)
   - "Continue the battle" monsters first in list
-  - TODO: Notification on loot error,etc
+  - Notification on loot error,etc
   - TODO: Gate info hidden by default and clicking Gate Header shows it
 - Battle page
   - Reduced monster size and centered text
