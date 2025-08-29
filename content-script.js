@@ -25,6 +25,7 @@ function initBattleMods(){
   initReducedImageSize()
   initPossibleLootReached()
   initTotalOwnDamage()
+  initAnyClickClosesModal()
 }
 
 // MAIN INIT AND CHECKS
@@ -463,6 +464,9 @@ function initInstaLoot(){
     notif.style = `position: fixed; top: 50vh; right: 40vw;background: #2ecc71;color: white;padding: 12px 20px;border-radius: 10px;box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);font-size: 15px;display: none;z-index: 9999;`
     notif.id = "notification";
     document.querySelector('.content-area').appendChild(modal.firstElementChild).parentNode.appendChild(notif)
+    document.getElementById('lootModal').addEventListener('click', function(event) {
+      this.style.display = 'none';
+    });
   }
 
   document.querySelectorAll('.monster-card > a').forEach(x=>{ 
@@ -574,4 +578,10 @@ function initPossibleLootReached(){
 }
 function initTotalOwnDamage(){
   //TODO
+}
+
+function initAnyClickClosesModal(){
+  document.getElementById('lootModal').addEventListener('click', function(event) {
+    this.style.display = 'none';
+  });
 }

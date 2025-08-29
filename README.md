@@ -29,11 +29,13 @@
 - Sidebar
 - Wave page
   - Claim Loot from Waves with "Insta" (requires the user id)
+    - Popup closes by clicking anywhere
   - "Continue the battle" monsters first in list
   - Notification on loot error,etc
   - Gate info hidden by default and clicking Gate Header shows it
 - Battle page
   - Reduced monster size and centered text
+  - Loot popup closes by clicking anywhere
   - TODO: Total own damage dealt (client side tracking)
   - TODO: Possible loot dinamic unlock (currently game requires refresh to show if you unlocked it)
 
@@ -44,5 +46,6 @@
 ###
 
 - Opera GX
+- Chrome
 
 ###
