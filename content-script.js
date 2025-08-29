@@ -17,6 +17,7 @@ const extensionPageHandlers = {
   '/active_wave.php': initWaveMods,
   '/game_dash.php': initDashboardTools,
   '/battle.php': initBattleMods,
+  '/chat.php': initChatMods,
   // more pages here with their handlers
 };
 
@@ -37,6 +38,13 @@ function initBattleMods(){
   initPossibleLootReached()
   initTotalOwnDamage()
   initAnyClickClosesModal()
+}
+
+function initChatMods(){
+    const logEl = document.getElementById("chatLog");
+    if (logEl) {
+      logEl.scrollTop = logEl.scrollHeight;
+    }
 }
 
 // MAIN INIT AND CHECKS
