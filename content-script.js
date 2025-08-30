@@ -644,7 +644,7 @@ function initInstaLoot(){
         joinWave(x.href.split("id=")[1],x)
       };
       instaJoinBtn.className = "join-btn"
-      instaJoinBtn.innerText = "Insta Join"
+      instaJoinBtn.innerText = "⚔️ Insta Join"
       x.parentNode.append(instaJoinBtn)
     }
 })
