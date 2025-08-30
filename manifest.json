@@ -19,14 +19,14 @@
     {
       "matches": ["https://demonicscans.org/*"],
       "js": ["content-script.js"],
-      "css": ["styles.css"]
+      "css": ["popupstyles.css"]
     }
   ],
   "background": {
     "service_worker": "service-worker.js"
   },
   "web_accessible_resources": [{
-    "resources": ["styles.css"],
+    "resources": ["popupstyles.css"],
     "matches": ["https://demonicscans.org/*"]
   }]
 }

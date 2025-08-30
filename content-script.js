@@ -1,14 +1,13 @@
 // Automatic retrieval of userId from cookie
-function getCookie(name) {
+function getCookieExtension(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
 }
-const userId = getCookie('demon');
+const userId = getCookieExtension('demon');
 if(!userId){
-  console.log("Error retrieving user id, check if you are logged in")
-  console.log("Error retrieving user id, check if you are logged in")
-  console.log("Error retrieving user id, check if you are logged in")
+  // Not logged in
+  window.location.href = '/signin.php'
 }
 
 // Page-specific functionality mapping
@@ -18,6 +17,7 @@ const extensionPageHandlers = {
   '/game_dash.php': initDashboardTools,
   '/battle.php': initBattleMods,
   '/chat.php': initChatMods,
+  '/inventory.php': initInventoryMods,
   // more pages here with their handlers
 };
 
@@ -45,6 +45,146 @@ function initChatMods(){
     if (logEl) {
       logEl.scrollTop = logEl.scrollHeight;
     }
+}
+
+function initInventoryMods(){
+
+  if (!window.location.pathname.includes('inventory.php')) return;
+  
+  // Add toggle functionality to the header
+  const header = document.querySelector('h1');
+  if (header) {
+    header.style.cursor = 'pointer';
+    header.title = 'Click to toggle between grid and table view';
+    const viewIndicator = document.createElement('span');
+    viewIndicator.id = 'view-indicator';
+    viewIndicator.style.marginLeft = '10px';
+    viewIndicator.style.fontSize = '14px';
+    viewIndicator.style.color = '#cba6f7';
+    header.appendChild(viewIndicator);
+    
+    // Load saved view preference
+    chrome.storage.local.get(['inventoryView'], (result) => {
+      const defaultView = result.inventoryView || 'table';
+      viewIndicator.textContent = `[${defaultView.toUpperCase()} VIEW]`;
+      
+      if (defaultView === 'table') {
+        convertToTableView();
+      }
+    });
+    
+    header.addEventListener('click', toggleInventoryView);
+  }
+  
+
+  function toggleInventoryView() {
+    const viewIndicator = document.getElementById('view-indicator');
+    const currentView = viewIndicator.textContent.includes('TABLE') ? 'table' : 'grid';
+    const newView = currentView === 'table' ? 'grid' : 'table';
+    
+    viewIndicator.textContent = `[${newView.toUpperCase()} VIEW]`;
+    
+    // Save preference
+    chrome.storage.local.set({ inventoryView: newView });
+    
+    if (newView === 'table') {
+      convertToTableView();
+    } else {
+      convertToGridView();
+    }
+  }
+
+  function convertToTableView() {
+    // Remove any existing tables
+    document.querySelectorAll('.inventory-table').forEach(table => table.remove());
+    
+    // Process each section
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => {
+      const title = section.querySelector('.section-title').textContent;
+      const grid = section.querySelector('.grid');
+      
+      if (grid) {
+        // Hide the grid
+        grid.style.display = 'none';
+        
+        // Create table
+        const table = document.createElement('table');
+        table.className = 'inventory-table';
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Details</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        
+        const tbody = table.querySelector('tbody');
+        
+        // Process each item
+        const items = grid.querySelectorAll('.slot-box');
+        items.forEach(item => {
+          const row = document.createElement('tr');
+          
+          // Extract item image
+          const img = item.querySelector('img');
+          const imgSrc = img ? img.src : '';
+          const imgAlt = img ? img.alt : '';
+          
+          // Extract item info
+          const label = item.querySelector('.label');
+          const labelText = label ? label.textContent : '';
+          
+          // Extract buttons
+          const buttons = item.querySelectorAll('button');
+          
+          // Create table cells
+          row.innerHTML = `
+            <td class="table-item-image">
+              <img src="${imgSrc}" alt="${imgAlt}" onerror="this.style.display='none'">
+              <div class="table-item-name">${imgAlt}</div>
+            </td>
+            <td class="table-item-details">${labelText}</td>
+            <td class="table-item-actions"></td>
+          `;
+          
+          // Add buttons to actions cell
+          const actionsCell = row.querySelector('.table-item-actions');
+          buttons.forEach(button => {
+            if (!button.classList.contains('info-btn')) {
+              actionsCell.appendChild(button.cloneNode(true));
+            }
+          });
+          
+          // Add info button if exists
+          const infoBtn = item.querySelector('.info-btn');
+          if (infoBtn) {
+            const infoClone = infoBtn.cloneNode(true);
+            actionsCell.appendChild(infoClone);
+          }
+          
+          tbody.appendChild(row);
+        });
+        
+        // Insert table after the section title
+        section.insertBefore(table, grid);
+      }
+    });
+  }
+  
+  function convertToGridView() {
+    // Remove all tables
+    document.querySelectorAll('.inventory-table').forEach(table => table.remove());
+    
+    // Show all grids
+    document.querySelectorAll('.grid').forEach(grid => {
+      grid.style.display = 'flex';
+    });
+  }
+
 }
 
 // MAIN INIT AND CHECKS
@@ -328,7 +468,7 @@ function injectStyles() {
     link.id = 'demon-extension-styles';
     link.rel = 'stylesheet';
     link.type = 'text/css';
-    link.href = chrome.runtime.getURL('styles.css');
+    link.href = chrome.runtime.getURL('popupstyles.css');
     document.head.appendChild(link);
   }
 }
@@ -490,18 +630,161 @@ function initInstaLoot(){
 
   document.querySelectorAll('.monster-card > a').forEach(x=>{ 
     if(x.innerText.includes('Loot')){
-        var instaBtn = document.createElement('button');
-        instaBtn.onclick = function() {
-          lootWave(x.href.split("id=")[1])
-        };
-        instaBtn.className = "join-btn"
-        instaBtn.innerText = "Insta 💰"
-        x.parentNode.append(instaBtn)
+      var instaBtn = document.createElement('button');
+      instaBtn.onclick = function() {
+        lootWave(x.href.split("id=")[1])
+      };
+      instaBtn.className = "join-btn"
+      instaBtn.innerText = "Insta 💰"
+      x.parentNode.append(instaBtn)
+    }
+    if(x.innerText.includes('Join the Battle')){
+      var instaJoinBtn = document.createElement('button');
+      instaJoinBtn.onclick = function() {
+        joinWave(x.href.split("id=")[1],x)
+      };
+      instaJoinBtn.className = "join-btn"
+      instaJoinBtn.innerText = "Insta Join"
+      x.parentNode.append(instaJoinBtn)
     }
 })
 }
+
+function joinWave(monsterId,x){
+    fetch('user_join_battle.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'monster_id='+monsterId+'&user_id='+userId,
+      referrer:'https://demonicscans.org/battle.php?id='+monsterId
+    })
+    .then(res => res.text())
+    .then(data => {
+      const msg = (data || '').trim();
+      const ok = msg.toLowerCase().startsWith('you have successfully');
+      showNotification(msg || 'Unknown response', ok ? 'success' : 'error');
+      if (ok) {
+        x.click()
+      }
+    })
+    .catch(() => showNotification('Server error. Please try again.', 'error'));
+      
+}
+
+
+//#region Hit from wave
+
+// --- Cookie helpers + cooldown checks ---
+function getCookie(name) {
+  const m = document.cookie.split('; ').find(r => r.startsWith(name + '='));
+  return m ? decodeURIComponent(m.split('=')[1]) : '';
+}
+function setCookie(name, value, maxAgeSeconds = 86400) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
+}
+function canAttackNow() {
+  const last = parseInt(getCookie('last_attack') || '0', 10) || 0;
+  const now  = Date.now();
+  if (last && now - last < 1000) {
+    return { ok: false, waitMs: 1000 - (now - last) };
+  }
+  return { ok: true, now };
+}
+function lockAttackButtons(lock = true) {
+  document.querySelectorAll('.attack-btn').forEach(b => {
+    b.disabled = lock;
+    if (lock) {
+      b.classList.add('is-loading');
+      b.setAttribute('aria-busy', 'true');
+    } else {
+      b.classList.remove('is-loading');
+      b.removeAttribute('aria-busy');
+    }
+  });
+}
+
+
+function hitWave(monsterId){
+  // Cooldown gate (3s) backed by a cookie
+  const check = canAttackNow();
+  if (!check.ok) {
+    const secs = Math.ceil(check.waitMs / 1000);
+    showNotification(`⏳ Take your time… ${secs}s`, 'error');
+    return; // block the attack
+  }
+   // Record the attempt immediately and soft-lock buttons for 3s
+  setCookie('last_attack', check.now);
+  lockAttackButtons(true);
+  setTimeout(() => lockAttackButtons(false), 1000);
+  const skillId = btn.getAttribute('data-skill-id');
+  const cost = (skillId === "-1") ? 10 
+      : (skillId === "-2") ? 50 
+      : 1;   // Slash = 1 stamina
+
+  fetch('damage.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'monster_id='+monsterId+'&user_id='+userId+'&skill_id=' + skillId + '&stamina_cost=' + cost,
+      referrer:'https://demonicscans.org/battle.php?id='+monsterId
+  })
+  .then(res => res.json())
+  .then(data => {
+      if (data.status.trim() === 'success') {
+          showNotification(data.message, 'success');
+          animateMonster();
+          document.getElementById('hpFill').style.width = data.hp.percent + '%';
+          document.getElementById('stamina_span').innerHTML = data.stamina;
+          document.getElementById('hpText').innerHTML = `❤️ ${new Intl.NumberFormat().format(data.hp.value)} / 1,000,000 HP`;
+
+          if(Intl.NumberFormat().format(data.hp.value) <= 0) {
+              location.reload();
+          }
+
+          // Leaderboard + logs update
+          document.querySelector('.leaderboard-panel').innerHTML =
+            '<strong>📊 Attackers Leaderboard</strong>' +
+            '<div class="lb-list">' +
+            data.leaderboard.map((row, i) => {
+              const av = row.PICTURE && row.PICTURE.trim()
+                ? row.PICTURE
+                : 'images/default_avatar.png';
+              return `
+                <div class="lb-row">
+                  <span class="lb-rank">#${i + 1}</span>
+                  <img class="lb-avatar" src="${av}" alt="">
+                  <span class="lb-name">
+                    <a style="color:white;" href="player.php?pid=${row.ID}">${row.USERNAME}</a>
+                  </span>
+                  <span class="lb-dmg">${new Intl.NumberFormat().format(row.DAMAGE_DEALT)} DMG</span>
+                </div>`;
+            }).join('') +
+            '</div>';
+
+          document.querySelector('.log-panel').innerHTML =
+            '<strong>📜 Attack Log</strong><br>' +
+            data.logs.map(row => `⚔️ ${row.USERNAME} used ${row.SKILL_NAME} for ${new Intl.NumberFormat().format(row.DAMAGE)} DMG!<br>`).join('');
+
+          if (typeof data.xp_delta === 'number') {
+          addExpUI(data.xp_delta);
+          } else {
+              addExpUI(10);
+          }
+      } else {
+          if (data.message && data.message.trim() === "Monster is already dead.") {
+              location.reload();
+          } else {
+              showNotification(data.message || "An error occurred.", 'error');
+          }
+      }
+  })
+  .catch(() => showNotification("Server error", 'error'));
+
+}
+
+//#endregion
+
 function lootWave(monsterId){
-  
   fetch('loot.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

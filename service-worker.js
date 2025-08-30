@@ -142,6 +142,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true; 
   }
+
+  if (request.type === "GET_INVENTORY_VIEW") {
+    chrome.storage.local.get(['inventoryView'], (result) => {
+      sendResponse(result.inventoryView || 'table');
+    });
+    return true;
+  }
+  
+  if (request.type === "SET_INVENTORY_VIEW") {
+    chrome.storage.local.set({ inventoryView: request.view });
+    sendResponse({ success: true });
+    return true;
+  }
+
+  // More events here
+
 });
 
 /*

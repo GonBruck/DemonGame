@@ -26,11 +26,14 @@
   - "Continue the battle" monsters first in list
   - Notification on loot error,etc
   - Gate info hidden by default and clicking Gate Header shows it
+  - Instantly join a battle, ready to hit
 - Battle page
   - Reduced monster size and centered text
   - Loot popup closes by clicking anywhere
   - TODO: Total own damage dealt (client side tracking)
   - TODO: Possible loot dinamic unlock (currently game requires refresh to show if you unlocked it)
+- Inventory page
+  - Grid view
 
 ###
 
