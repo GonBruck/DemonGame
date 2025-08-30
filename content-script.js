@@ -880,6 +880,30 @@ function initPossibleLootReached(){
 }
 function initTotalOwnDamage(){
   //TODO
+  colorMyself();
+  const observer = new MutationObserver((mutations) => {
+    const shouldUpdate = mutations.some(mutation => 
+      mutation.type === 'childList' && mutation.addedNodes.length > 0
+    );
+    
+    if (shouldUpdate) {
+      // Small delay to ensure DOM is fully updated
+      setTimeout(colorMyself, 50);
+    }
+  });
+  const config = {
+    childList: true,
+    subtree: true
+  };
+  const targetElement = document.querySelector('.leaderboard-panel');
+  observer.observe(targetElement, config);
+}
+function colorMyself(){
+  document.querySelectorAll('.lb-row a').forEach(x => {
+    if(x.href.includes(userId)){
+      x.parentElement.parentElement.style.backgroundColor = '#7a2020'
+    }
+  })
 }
 
 function initAnyClickClosesModal(){
