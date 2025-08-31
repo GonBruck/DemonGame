@@ -30,7 +30,7 @@
 - Battle page
   - Reduced monster size and centered text
   - Loot popup closes by clicking anywhere
-  - TODO: Total own damage dealt (client side tracking)
+  - Hightlight total damage dealt (client side tracking)
   - TODO: Possible loot dinamic unlock (currently game requires refresh to show if you unlocked it)
 - Inventory page
   - Grid view

@@ -7,7 +7,7 @@ function getCookieExtension(name) {
 const userId = getCookieExtension('demon');
 if(!userId){
   // Not logged in
-  window.location.href = '/signin.php'
+  console.log('Not logged in')
 }
 
 // Page-specific functionality mapping
