@@ -30,8 +30,9 @@
 - Battle page
   - Reduced monster size and centered text
   - Loot popup closes by clicking anywhere
-  - Hightlight total damage dealt (client side tracking)
-  - TODO: Possible loot dinamic unlock (currently game requires refresh to show if you unlocked it)
+  - Highlight total damage dealt (client side tracking)
+  - Your damage total updates on hit
+  - Loot dinamic unlock and increased visibility
 - Inventory page
   - Grid view
 

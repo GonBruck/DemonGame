@@ -8,6 +8,14 @@ const userId = getCookieExtension('demon');
 if(!userId){
   // Not logged in
   console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
+  console.log('Not logged in')
 }
 
 // Page-specific functionality mapping
@@ -873,6 +881,7 @@ function initContinueBattleFirst(){
 function initReducedImageSize(){
   document.getElementById('monsterImage').style.maxHeight="400px";
   document.querySelector('.content-area > .panel').style.justifyItems="center";
+  document.querySelector('.content-area > .panel').style.textAlign="center";
   document.querySelector('.hp-bar').style.justifySelf="normal";
 }
 function initPossibleLootReached(){
@@ -901,7 +910,44 @@ function initTotalOwnDamage(){
 function colorMyself(){
   document.querySelectorAll('.lb-row a').forEach(x => {
     if(x.href.includes(userId)){
-      x.parentElement.parentElement.style.backgroundColor = '#7a2020'
+      var lbrow = x.parentElement.parentElement
+      var exDamageDone =lbrow.querySelector('.lb-dmg').innerText;
+      var exDamageNumber = Number.parseInt(exDamageDone.replace(',',''))
+
+      // Color leaderboard row
+      lbrow.style.backgroundColor = '#7a2020'
+
+      // update "Your damage"
+      document.querySelector("div.stats-stack > span").innerText = "Your damage: "+ exDamageDone
+
+      // update loot requirements
+      var lootContainer = document.createElement('div')
+      lootContainer.id = 'extension-loot-container'
+      lootContainer.style.display='ruby'
+      lootContainer.style.maxWidth='50%'
+      document.querySelectorAll('.loot-card').forEach(x=>lootContainer.append(x))
+      var enemyAndLootContainer = document.createElement('div')
+      enemyAndLootContainer.id = 'extension-enemy-loot-container'
+      enemyAndLootContainer.style.display='inline-flex'
+      enemyAndLootContainer.append(document.querySelector('.monster_image'))
+      enemyAndLootContainer.append(lootContainer)
+      document.querySelector("body > div.main-wrapper > div > .panel").prepend(enemyAndLootContainer)
+      document.querySelectorAll('.loot-card').forEach( y => {
+        y.querySelectorAll('.loot-stats .chip').forEach(x=>{
+          if(x.innerText.includes('DMG req')){
+            var lootReqNumber = Number.parseInt(x.innerText.substr(9).replace(',',''))
+            if(lootReqNumber<=exDamageNumber){
+              y.style.background = 'rgb(0 255 30 / 20%)'
+              y.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.6)'
+              try{
+                y.classList.remove('locked')
+                y.querySelector('.lock-badge').remove()
+              } catch {}
+            }
+          }
+        });
+      });
+
     }
   })
 }
