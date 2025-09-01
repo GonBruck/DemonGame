@@ -933,7 +933,9 @@ function colorMyself(){
       enemyAndLootContainer.append(lootContainer)
       document.querySelector("body > div.main-wrapper > div > .panel").prepend(enemyAndLootContainer)
       document.querySelectorAll('.loot-card').forEach( y => {
+        y.style.margin='5px'
         y.querySelectorAll('.loot-stats .chip').forEach(x=>{
+          x.parentElement.style.gap = '0px'
           if(x.innerText.includes('DMG req')){
             var lootReqNumber = Number.parseInt(x.innerText.substr(9).replace(',',''))
             if(lootReqNumber<=exDamageNumber){
