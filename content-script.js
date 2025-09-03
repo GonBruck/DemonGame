@@ -1005,24 +1005,8 @@ function initReducedImageSize(){
 function initPossibleLootReached(){
   //TODO
 }
-
-function removeAfter(){
-  document.querySelectorAll("span.lb-rank").forEach(x=> {
-    var position = Number.parseInt(x.innerText.substring(1))
-    if(position <11){
-        x.parentElement.style.backgroundColor = 'green'
-    } else if (position >10 && position < 16){
-        x.parentElement.style.backgroundColor = '#8a1e1e'
-    }
-  })
-
-
-}
 function initTotalOwnDamage(){
   //TODO
-  //
-  //removeAfter()
-
   colorMyself();
   const observer = new MutationObserver((mutations) => {
     const shouldUpdate = mutations.some(mutation => 
