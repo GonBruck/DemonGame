@@ -165,3 +165,28 @@
     flex-direction: column;
   }
 }
+
+#total-item-damage{
+  font-size: 15px;
+  font-weight: lighter;
+  margin-left: 20px;
+  color: red;
+  border: 1px solid;
+  padding: 5px;
+}
+#total-pet-damage{
+  font-size: 15px;
+  font-weight: lighter;
+  margin-left: 20px;
+  color: red;
+  border: 1px solid;
+  padding: 5px;
+}
+#total-player-damage{
+  font-size: 15px;
+  font-weight: lighter;
+  margin-left: 20px;
+  color: red;
+  border: 1px solid;
+  padding: 5px;
+}

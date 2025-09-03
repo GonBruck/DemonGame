@@ -35,6 +35,11 @@
   - Loot dinamic unlock and increased visibility
 - Inventory page
   - Grid view
+  - Total Item Damage
+- Pet Page
+  - Total Pet Damage
+- Stat Page
+  - Total Attack Damage vs 0 vs 25 vs 50 DEF
 
 ###
 

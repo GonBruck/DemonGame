@@ -26,6 +26,8 @@ const extensionPageHandlers = {
   '/battle.php': initBattleMods,
   '/chat.php': initChatMods,
   '/inventory.php': initInventoryMods,
+  '/pets.php': initPetMods,
+  '/stats.php': initStatMods,
   // more pages here with their handlers
 };
 
@@ -56,7 +58,96 @@ function initChatMods(){
 }
 
 function initInventoryMods(){
+  initAlternativeInventoryView()
+  initItemTotalDmg()
+}
 
+function initPetMods(){
+  initPetTotalDmg()
+}
+
+function initStatMods(){
+  initPlayerAtkDamage()
+}
+
+function initPlayerAtkDamage(){
+  //1000 × max(0, (UserATK − MonsterDEF))^0.25
+  /*
+  <div class="row"><span>ATTACK</span><span id="v-attack">305</span></div>
+  */
+  var atkValue = Number.parseInt(document.getElementById('v-attack').innerText.replace(',',''))
+
+  var statRow = document.createElement('div')
+  statRow.title = 'Damage is calculated based on 0 DEF monster'
+  statRow.classList.add('row')
+  statRow.style.color = 'red'
+  var statName = document.createElement('span')
+  statName.innerText = 'ATTACK DMG VS 0 DEF'
+  var statValue = document.createElement('span')
+  var atkValue = Number.parseInt(document.getElementById('v-attack').innerText.replace(',',''))
+  var playerTotalDmg = calcDmg(atkValue,0)
+  statValue.innerText = playerTotalDmg;
+  statRow.append(statName)
+  statRow.append(statValue)
+  document.querySelectorAll('.grid .card')[1].append(statRow)
+
+  var statRow2=  document.createElement('div')
+  statRow2.title = 'Damage is calculated based on 0 DEF monster'
+  statRow2.classList.add('row')
+  statRow2.style.color = 'red'
+  var statName2 = document.createElement('span')
+  statName2.innerText = 'ATTACK DMG VS 25 DEF'
+  var statValue2 = document.createElement('span')
+  playerTotalDmg = calcDmg(atkValue,25)
+  statValue2.innerText = playerTotalDmg;
+  statRow2.append(statName2)
+  statRow2.append(statValue2)
+  document.querySelectorAll('.grid .card')[1].append(statRow2)
+
+  var statRow3=  document.createElement('div')
+  statRow3.title = 'Damage is calculated based on 0 DEF monster'
+  statRow3.classList.add('row')
+  statRow3.style.color = 'red'
+  var statName3 = document.createElement('span')
+  statName3.innerText = 'ATTACK DMG VS 50 DEF'
+  var statValue3 = document.createElement('span')
+  playerTotalDmg = calcDmg(atkValue,50)
+  statValue3.innerText = playerTotalDmg;
+  statRow3.append(statName3)
+  statRow3.append(statValue3)
+  document.querySelectorAll('.grid .card')[1].append(statRow3)
+  
+}
+
+function calcDmg(atkValue,def){
+  return Math.round(1000*((atkValue-def)**0.25));
+}
+
+function initPetTotalDmg(){
+  var petTotalDmg=0;
+  document.querySelector('.section').querySelectorAll('.pet-atk').forEach(x=>{
+    petTotalDmg += Number.parseInt(x.innerText)
+  })
+  var finalAmount = petTotalDmg*10
+  var totalDmgContainer = document.createElement('span')
+  totalDmgContainer.id = 'total-pet-damage'
+  totalDmgContainer.innerText = 'Total pet damage: '+ finalAmount
+  document.querySelector('.section-title').appendChild(totalDmgContainer)
+}
+
+function initItemTotalDmg(){
+  var itemsTotalDmg=0;
+  document.querySelector('.section').querySelectorAll('.label').forEach(x=>{
+    itemsTotalDmg += Number.parseInt(x.innerText.substring(x.innerText.indexOf('🔪')+3).split(' ATK')[0])
+  })
+  var finalAmount = itemsTotalDmg*15
+  var totalDmgContainer = document.createElement('span')
+  totalDmgContainer.id = 'total-item-damage'
+  totalDmgContainer.innerText = 'Total item damage: '+ finalAmount
+  document.querySelector('.section-title').appendChild(totalDmgContainer)
+}
+
+function initAlternativeInventoryView(){
   if (!window.location.pathname.includes('inventory.php')) return;
   
   // Add toggle functionality to the header
@@ -204,6 +295,7 @@ if (document.querySelector('.game-topbar')) {
   } else {
     // Sidebar always first so we dont mess the layout
     initSideBar();
+    //initChatPopup();
     // stats tracker was intended to be the popup with stats
     // and update live and always on top of any website, i left it out for now
     // since it was a little buggy, left it in as example
@@ -213,6 +305,24 @@ if (document.querySelector('.game-topbar')) {
     injectStyles();
     initPageSpecificFunctionality()
   }
+}
+
+function initChatPopup(){
+  var chatPopup = document.createElement('div')
+  chatPopup.classList.add('panel')
+
+  fetch('chat.php', {
+    method: 'GET'
+  })
+  .then(res => res.text())
+  .then(data => {
+    chatPopup.innerHTML = data;
+    document.querySelector('.content-area').prepend(chatPopup)
+  })
+  .catch(() => showNotification('Server error. Please try again.', 'error'));
+
+
+  
 }
 
 
@@ -878,6 +988,14 @@ function initContinueBattleFirst(){
   })
 }
 
+function initOrderByRemainingHP(){
+  document.querySelectorAll('.monster-card').forEach(x=>{
+    if(x.innerText.includes('Continue the Battle')){
+        document.querySelector('.monster-container').prepend(x)
+    }
+  })
+}
+
 function initReducedImageSize(){
   document.getElementById('monsterImage').style.maxHeight="400px";
   document.querySelector('.content-area > .panel').style.justifyItems="center";
@@ -887,8 +1005,24 @@ function initReducedImageSize(){
 function initPossibleLootReached(){
   //TODO
 }
+
+function removeAfter(){
+  document.querySelectorAll("span.lb-rank").forEach(x=> {
+    var position = Number.parseInt(x.innerText.substring(1))
+    if(position <11){
+        x.parentElement.style.backgroundColor = 'green'
+    } else if (position >10 && position < 16){
+        x.parentElement.style.backgroundColor = '#8a1e1e'
+    }
+  })
+
+
+}
 function initTotalOwnDamage(){
   //TODO
+  //
+  //removeAfter()
+
   colorMyself();
   const observer = new MutationObserver((mutations) => {
     const shouldUpdate = mutations.some(mutation => 
