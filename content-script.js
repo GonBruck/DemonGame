@@ -75,7 +75,7 @@ function initPlayerAtkDamage(){
   /*
   <div class="row"><span>ATTACK</span><span id="v-attack">305</span></div>
   */
-  var atkValue = Number.parseInt(document.getElementById('v-attack').innerText.replace(',',''))
+  var atkValue = Number.parseInt(document.getElementById('v-attack').innerText.replace(',','').replace('.',''))
 
   var statRow = document.createElement('div')
   statRow.title = 'Damage is calculated based on 0 DEF monster'
@@ -84,7 +84,7 @@ function initPlayerAtkDamage(){
   var statName = document.createElement('span')
   statName.innerText = 'ATTACK DMG VS 0 DEF'
   var statValue = document.createElement('span')
-  var atkValue = Number.parseInt(document.getElementById('v-attack').innerText.replace(',',''))
+  var atkValue = Number.parseInt(document.getElementById('v-attack').innerText.replace(',','').replace('.','').replace('.',''))
   var playerTotalDmg = calcDmg(atkValue,0)
   statValue.innerText = playerTotalDmg;
   statRow.append(statName)
@@ -1030,7 +1030,7 @@ function colorMyself(){
     if(x.href.includes(userId)){
       var lbrow = x.parentElement.parentElement
       var exDamageDone =lbrow.querySelector('.lb-dmg').innerText;
-      var exDamageNumber = Number.parseInt(exDamageDone.replace(',',''))
+      var exDamageNumber = Number.parseInt(exDamageDone.replace(',','').replace('.',''))
 
       // Color leaderboard row
       lbrow.style.backgroundColor = '#7a2020'
@@ -1055,7 +1055,7 @@ function colorMyself(){
         y.querySelectorAll('.loot-stats .chip').forEach(x=>{
           x.parentElement.style.gap = '0px'
           if(x.innerText.includes('DMG req')){
-            var lootReqNumber = Number.parseInt(x.innerText.substr(9).replace(',',''))
+            var lootReqNumber = Number.parseInt(x.innerText.substr(9).replace(',','').replace('.',''))
             if(lootReqNumber<=exDamageNumber){
               y.style.background = 'rgb(0 255 30 / 20%)'
               y.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.6)'
