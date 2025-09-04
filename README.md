@@ -21,12 +21,13 @@
 
 - Sidebar
 - Wave page
-  - Claim Loot from Waves with "Insta" (requires the user id)
+  - Claim Loot from Waves with "Insta"
     - Popup closes by clicking anywhere
   - "Continue the battle" monsters first in list
   - Notification on loot error,etc
   - Gate info hidden by default and clicking Gate Header shows it
   - Instantly join a battle, ready to hit
+  - Alternative Table view (Work in progress)
 - Battle page
   - Reduced monster size and centered text
   - Loot popup closes by clicking anywhere

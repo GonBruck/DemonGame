@@ -1,0 +1,156 @@
+.monster-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(to bottom, #2c3e50, #1a1f2d);
+}
+
+/* Table styling */
+.monster-container table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #1e2430;
+  color: #e0e0e0;
+}
+
+/* Header styling */
+.monster-container thead {
+  background: linear-gradient(to bottom, #8b0000, #660000);
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.monster-container th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+.monster-container th:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, #ff3f3f, transparent);
+}
+
+/* Table cells */
+.monster-container td {
+  padding: 1px 12px;
+  border-bottom: 1px solid #2a3244;
+  vertical-align: middle;
+}
+
+/* Row styling */
+.monster-container tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.monster-container tbody tr:hover {
+  background-color: #2a3244;
+}
+
+/* Zebra striping for rows */
+.monster-container tbody tr:nth-child(even) {
+  background-color: #252b39;
+}
+
+.monster-container tbody tr:nth-child(even):hover {
+  background-color: #2f3849;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .monster-container {
+      margin: 10px;
+      font-size: 14px;
+  }
+  
+  .monster-container th, 
+  .monster-container td {
+      padding: 10px 8px;
+  }
+  
+}
+
+/* HP Bar styling */
+.ext-hp-bar-container {
+  background-color: #333;
+  border-radius: 10px;
+  height: 20px;
+  overflow: hidden;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.6);
+}
+
+.ext-hp-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease-in-out;
+  background: linear-gradient(to right, #ff0000, #ff8c00);
+  box-shadow: 0 0 8px rgba(255, 140, 0, 0.6);
+}
+
+/* Low health state */
+.ext-hp-fill[style*="width:2"] {
+  background: linear-gradient(to right, #ff0000, #8b0000);
+}
+
+.ext-hp-fill[style*="width:1"] {
+  background: linear-gradient(to right, #ff0000, #8b0000);
+}
+
+.ext-hp-fill[style*="width:0"] {
+  background: linear-gradient(to right, #8b0000, #660000);
+}
+
+/* Join button styling */
+.ext-join-btn {
+  background: linear-gradient(to bottom, #8b0000, #660000);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.ext-join-btn:hover {
+  background: linear-gradient(to bottom, #a00, #800);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.ext-join-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Monster name styling */
+.ext-monster-name {
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* HP text styling */
+.ext-hp-text {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #ff6b6b;
+}
+
+/* Players text styling */
+.ext-players-text {
+  color: #a0a0ff;
+  font-weight: 500;
+}

@@ -36,6 +36,7 @@ function initWaveMods() {
   initMonsterFilter()
   initInstaLoot()
   initContinueBattleFirst()
+  //initAlternativeWaveView()
 }
 
 function initDashboardTools() {
@@ -302,7 +303,7 @@ if (document.querySelector('.game-topbar')) {
     //initStatsTracker();
     // same for this this styles, it injects a styles.css, not using it much
     // but left here as example
-    injectStyles();
+    //injectStyles();
     initPageSpecificFunctionality()
   }
 }
@@ -587,6 +588,17 @@ function injectStyles() {
     link.rel = 'stylesheet';
     link.type = 'text/css';
     link.href = chrome.runtime.getURL('popupstyles.css');
+    document.head.appendChild(link);
+  }
+}
+
+function injectWaveAltViewStyles(){
+  if (!document.getElementById('demon-extension-wave-styles')) {
+    const link = document.createElement('link');
+    link.id = 'demon-extension-wave-styles';
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = chrome.runtime.getURL('wavestyles.css');
     document.head.appendChild(link);
   }
 }
@@ -995,6 +1007,75 @@ function initOrderByRemainingHP(){
     }
   })
 }
+
+//#region Wave Alternative view table
+
+function initAlternativeWaveView(){
+  injectWaveAltViewStyles()
+  var monsterCards = document.querySelectorAll('.monster-card');
+  var monstersInfoList = []
+  monsterCards.forEach(x => {
+    var monsterInfo = {}
+    monsterInfo.fullcard = x;
+    monsterInfo.img = x.querySelector('img')
+    monsterInfo.name = x.querySelector('h3')
+    monsterInfo.hpbar = x.querySelector('.hp-bar')
+    monsterInfo.id = x.querySelector('a')?.href.split('?id=')[1]
+    monsterInfo.join = x.querySelector('a')?? ''
+    monsterInfo.joinlink = x.querySelector('a')?.href
+    var innerdivs = x.querySelectorAll('div')
+    monsterInfo.hp = innerdivs[2].innerText
+    monsterInfo.playersjoined = innerdivs[3].innerText
+     /*
+      x.querySelectorAll('div').forEach(y=>{
+        if(y.innerText.includes(' HP')){
+          monsterInfo.hp = y.innerText
+        }
+        if(y.innerText.includes('Players Joined ')){
+          monsterInfo.playersjoined = y.innerText
+        }
+      })
+     */
+    if(monsterInfo.id){
+      monstersInfoList.push(monsterInfo)
+    }  
+  })
+
+  var orderedMonsterList = monstersInfoList.toSorted( (a,b) => {
+    return Number.parseInt(b.id) - Number.parseInt(a.id)
+  })
+
+  var tableBody = `<tbody>`
+  orderedMonsterList.forEach( x => {/*
+    x.join.firstChild.classList.add('ext-join-btn')
+    x.hpbar.firstChild.classList.add('ext-hp-fill')*/
+    x.join.firstChild.classList = ['ext-join-btn']
+    var row = `<tr>`
+    row += `<td class="ext-monster-name">${x.name.innerText}</td>`
+    row += `<td><a href=${x.joinlink}>${x.join.getHTML()}</a></td>`
+    row += `<td><div class="hp-bar">${x.hpbar.getHTML()}</div></td>`
+    row += `<td class="ext-hp-text">${x.hp}</td>`
+    row += `<td class="ext-players-text">${x.playersjoined}</td>`
+    row += `</tr>`
+    tableBody += row
+  })
+  tableBody += `</tbody>`
+  var table = `<table>
+  <thead>
+    <tr>
+    <th>Monster</th>
+    <th>Actions</th>
+    <th>HP Bar</th>
+    <th>HP</th>
+    <th>Players</th>
+    </tr>
+  </thead>`
+  table += tableBody
+  table += `</table>`
+  document.querySelector('.monster-container').innerHTML = table
+}
+
+//#endregion
 
 function initReducedImageSize(){
   document.getElementById('monsterImage').style.maxHeight="400px";
