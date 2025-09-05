@@ -190,3 +190,11 @@
   border: 1px solid;
   padding: 5px;
 }
+
+a {
+  user-select: none;
+}
+
+button {
+  user-select: none;
+}

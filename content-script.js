@@ -18,6 +18,7 @@ if(!userId){
   console.log('Not logged in')
 }
 
+var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","altView":false}
 // Page-specific functionality mapping
 // This would be usefull if i add stuff to specific pages
 const extensionPageHandlers = {
@@ -71,6 +72,9 @@ function initStatMods(){
   initPlayerAtkDamage()
 }
 
+/*
+base damage =((225 + ( equip atk * 20) + ( pet atk * 20) + skill damage)  + (1000 * ( user attack stat- active def) ^ 0.25)) *  stamina cost
+*/
 function initPlayerAtkDamage(){
   //1000 × max(0, (UserATK − MonsterDEF))^0.25
   /*
@@ -129,7 +133,7 @@ function initPetTotalDmg(){
   document.querySelector('.section').querySelectorAll('.pet-atk').forEach(x=>{
     petTotalDmg += Number.parseInt(x.innerText)
   })
-  var finalAmount = petTotalDmg*10
+  var finalAmount = petTotalDmg*20
   var totalDmgContainer = document.createElement('span')
   totalDmgContainer.id = 'total-pet-damage'
   totalDmgContainer.innerText = 'Total pet damage: '+ finalAmount
@@ -141,7 +145,7 @@ function initItemTotalDmg(){
   document.querySelector('.section').querySelectorAll('.label').forEach(x=>{
     itemsTotalDmg += Number.parseInt(x.innerText.substring(x.innerText.indexOf('🔪')+3).split(' ATK')[0])
   })
-  var finalAmount = itemsTotalDmg*15
+  var finalAmount = itemsTotalDmg*20
   var totalDmgContainer = document.createElement('span')
   totalDmgContainer.id = 'total-item-damage'
   totalDmgContainer.innerText = 'Total item damage: '+ finalAmount
@@ -296,6 +300,7 @@ if (document.querySelector('.game-topbar')) {
   } else {
     // Sidebar always first so we dont mess the layout
     initSideBar();
+    initDraggableFalse()
     //initChatPopup();
     // stats tracker was intended to be the popup with stats
     // and update live and always on top of any website, i left it out for now
@@ -304,8 +309,13 @@ if (document.querySelector('.game-topbar')) {
     // same for this this styles, it injects a styles.css, not using it much
     // but left here as example
     //injectStyles();
+    //injectWaveAltViewStyles()
     initPageSpecificFunctionality()
   }
+}
+function initDraggableFalse(){
+  document.querySelectorAll('a').forEach(x=>x.draggable = false)
+  document.querySelectorAll('button').forEach(x=>x.draggable = false)
 }
 
 function initChatPopup(){
@@ -636,6 +646,7 @@ async function initMonsterFilter() {
     if (monsterList) {
       obs.disconnect();
       const settings = await loadFilterSettings();
+      monsterFiltersSettings = settings;
       createFilterUI(monsterList,settings);
     }
   });
@@ -667,6 +678,10 @@ function createFilterUI(monsterList, settings) {
       <input type="checkbox" id="hide-dead-monsters">
       Hide defeated
     </label>
+    <label style="display: flex; align-items: center; gap: 5px;">
+      <input type="checkbox" id="alternative-view">
+      Alternative view
+    </label>
   `;
   
   // Insert before the monster list
@@ -674,6 +689,7 @@ function createFilterUI(monsterList, settings) {
   
   document.getElementById('monster-name-filter').addEventListener('input', applyMonsterFilters);
   document.getElementById('hide-dead-monsters').addEventListener('change', applyMonsterFilters);
+  document.getElementById('alternative-view').addEventListener('change', applyMonsterFilters);
   // Apply saved settings
   if (settings.nameFilter) {
     document.getElementById('monster-name-filter').value = settings.nameFilter;
@@ -692,28 +708,34 @@ function createFilterUI(monsterList, settings) {
 function applyMonsterFilters() {
   const nameFilter = document.getElementById('monster-name-filter').value.toLowerCase();
   const hideDead = document.getElementById('hide-dead-monsters').checked;
-  
-  const monsters = document.querySelectorAll('.monster-card');
-  
-  monsters.forEach(monster => {
-    const monsterName = monster.querySelector('h3').textContent.toLowerCase();
-    const isDead = monster.querySelector('img').classList.contains('grayscale');
-    const hasLoot = monster.innerText.includes("Loot");
+  if(monsterFiltersSettings.altView){
+
+  } else {
+
+    const monsters = document.querySelectorAll('.monster-card');
     
-    const nameMatch = monsterName.includes(nameFilter);
-    const shouldHideDead = hideDead && isDead && !hasLoot;
-    
-    if ((nameFilter && !nameMatch) || shouldHideDead) {
-      monster.style.display = 'none';
-    } else {
-      monster.style.display = '';
-    }
-  });
+    monsters.forEach(monster => {
+      const monsterName = monster.querySelector('h3').textContent.toLowerCase();
+      const isDead = monster.querySelector('img').classList.contains('grayscale');
+      const hasLoot = monster.innerText.includes("Loot");
+      
+      const nameMatch = monsterName.includes(nameFilter);
+      const shouldHideDead = hideDead && isDead && !hasLoot;
+      
+      if ((nameFilter && !nameMatch) || shouldHideDead) {
+        monster.style.display = 'none';
+      } else {
+        monster.style.display = '';
+      }
+    });
+  }
+
 
   // Saving filter settings :D
   const settings = {
     nameFilter: document.getElementById('monster-name-filter').value,
-    hideDead: document.getElementById('hide-dead-monsters').checked
+    hideDead: document.getElementById('hide-dead-monsters').checked,
+    altView: document.getElementById('alternative-view').checked
   };
   chrome.runtime.sendMessage({
     type: "EXT_SAVE_FILTER_SETTINGS",
@@ -1011,7 +1033,7 @@ function initOrderByRemainingHP(){
 //#region Wave Alternative view table
 
 function initAlternativeWaveView(){
-  injectWaveAltViewStyles()
+  
   var monsterCards = document.querySelectorAll('.monster-card');
   var monstersInfoList = []
   monsterCards.forEach(x => {

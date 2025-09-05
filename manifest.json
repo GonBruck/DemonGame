@@ -19,7 +19,7 @@
     {
       "matches": ["https://demonicscans.org/*"],
       "js": ["content-script.js"],
-      "css": ["popupstyles.css"]
+      "css": ["popupstyles.css","wavestyles.css"]
     }
   ],
   "background": {
