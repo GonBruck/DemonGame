@@ -29,6 +29,7 @@ const extensionPageHandlers = {
   '/inventory.php': initInventoryMods,
   '/pets.php': initPetMods,
   '/stats.php': initStatMods,
+  '/pvp.php': initPvPMods,
   // more pages here with their handlers
 };
 
@@ -38,6 +39,10 @@ function initWaveMods() {
   initInstaLoot()
   initContinueBattleFirst()
   //initAlternativeWaveView()
+}
+
+function initPvPMods(){
+  initPvPBannerFix()
 }
 
 function initDashboardTools() {
@@ -70,6 +75,18 @@ function initPetMods(){
 
 function initStatMods(){
   initPlayerAtkDamage()
+}
+
+function initPvPBannerFix(){
+  var contentArea = document.querySelector('.content-area');
+  var seasonCountdown = document.querySelector('.season-cta');
+  var pvpHero = document.querySelector('.pvp-hero');
+  pvpHero.style.marginTop = "0px";
+  if(seasonCountdown){
+    contentArea.prepend(seasonCountdown)
+  }
+  contentArea.prepend(pvpHero)
+  document.querySelector('br').remove()
 }
 
 /*
@@ -352,6 +369,7 @@ function initSideBar(){
       <a href="game_dash.php" style="text-decoration:none;"><h2>Game Menu</h2></a>
     </div>
     <ul class="sidebar-menu">
+      <li><a href="pvp.php"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
       <li><a href="event_goblin_feast.php"><img src="/images/events/goblin_fest/compressed_goblin_feast.webp" alt="Goblin Feast"> Goblin Feast</a></li>
       <li><a href="active_wave.php?gate=3&wave=3"><img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Gate Grakthar</a></li>
       <li><a href="inventory.php"><img src="images/menu/compressed_chest.webp" alt="Inventory"> Inventory & Equipment</a></li>
