@@ -186,7 +186,7 @@ function initAlternativeInventoryView(){
     
     // Load saved view preference
     chrome.storage.local.get(['inventoryView'], (result) => {
-      const defaultView = result.inventoryView || 'table';
+      const defaultView = result.inventoryView || 'grid';
       viewIndicator.textContent = `[${defaultView.toUpperCase()} VIEW]`;
       
       if (defaultView === 'table') {
