@@ -52,5 +52,6 @@
 
 - Opera GX
 - Chrome
+- Edge
 
 ###

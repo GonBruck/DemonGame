@@ -1192,7 +1192,11 @@ function colorMyself(){
       lbrow.style.backgroundColor = '#7a2020'
 
       // update "Your damage"
-      document.querySelector("div.stats-stack > span").innerText = "Your damage: "+ exDamageDone
+      document.querySelectorAll("div.stats-stack > span").forEach(x=>{
+        if(x.innerText.includes('Your Damage: ')){
+          x.innerText = "Your Damage: "+ exDamageDone
+        }
+      })
 
       // update loot requirements
       var lootContainer = document.createElement('div')
