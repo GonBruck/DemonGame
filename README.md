@@ -37,7 +37,7 @@
   - Your damage total updates on hit
   - Loot dinamic unlock and increased visibility
 - Inventory page
-  - Grid view
+  - Grid view (BETA)
   - Total Item Damage
 - Pet Page
   - Total Pet Damage
