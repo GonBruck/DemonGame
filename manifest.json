@@ -10,7 +10,8 @@
   "permissions": [
     "tabs",
     "storage",
-    "scripting"
+    "scripting",
+    "offscreen"
   ],
   "host_permissions": [
     "https://demonicscans.org/*"
@@ -26,7 +27,7 @@
     "service_worker": "service-worker.js"
   },
   "web_accessible_resources": [{
-    "resources": ["popupstyles.css","wavestyles.css"],
+    "resources": ["popupstyles.css","wavestyles.css","guitar.mp3"],
     "matches": ["https://demonicscans.org/*"]
   }]
 }

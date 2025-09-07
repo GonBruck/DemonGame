@@ -156,6 +156,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  if (request.type === "PLAY_SOUND") {
+    playSound();
+    return true;
+  }
   // More events here
 
 });
@@ -185,3 +189,27 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 */
+
+
+async function playSound() {
+  if (!(await hasOffscreenDocument())) {
+      await chrome.offscreen.createDocument({
+          url: chrome.runtime.getURL('offscreen.html'),
+          reasons: ['AUDIO_PLAYBACK'],
+          justification: 'Play alert sound for user notification'
+      });
+  }
+  
+  chrome.runtime.sendMessage({
+      type: "PLAY_SOUND",
+      soundFile: "guitar.mp3"
+  });
+}
+
+// Check if offscreen document already exists
+async function hasOffscreenDocument() {
+  const existingContexts = await chrome.runtime.getContexts({
+      contextTypes: ['OFFSCREEN_DOCUMENT']
+  });
+  return existingContexts.length > 0;
+}

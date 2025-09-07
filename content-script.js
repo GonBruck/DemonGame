@@ -17,8 +17,8 @@ if(!userId){
   console.log('Not logged in')
   console.log('Not logged in')
 }
-
-var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","hideImg":false}
+var alarmInterval = null;
+var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","hideImg":false, "monsterAlarm":false}
 // Page-specific functionality mapping
 // This would be usefull if i add stuff to specific pages
 const extensionPageHandlers = {
@@ -700,6 +700,10 @@ function createFilterUI(monsterList, settings) {
       <input type="checkbox" id="hide-img-monsters">
       Hide images
     </label>
+    <label style="display: flex; align-items: center; gap: 5px;">
+      <input type="checkbox" id="monster-alarm">
+      Monster alarm
+    </label>
   `;
   
   // Insert before the monster list
@@ -708,6 +712,7 @@ function createFilterUI(monsterList, settings) {
   document.getElementById('monster-name-filter').addEventListener('input', applyMonsterFilters);
   document.getElementById('hide-dead-monsters').addEventListener('change', applyMonsterFilters);
   document.getElementById('hide-img-monsters').addEventListener('change', applyMonsterFilters);
+  document.getElementById('monster-alarm').addEventListener('change', applyMonsterFilters);
   // Apply saved settings
   if (settings.nameFilter) {
     document.getElementById('monster-name-filter').value = settings.nameFilter;
@@ -718,6 +723,9 @@ function createFilterUI(monsterList, settings) {
   }
   if(settings.hideImg){
     document.getElementById('hide-img-monsters').checked = settings.hideImg;
+  }
+  if(settings.monsterAlarm){
+    document.getElementById('monster-alarm').checked = settings.monsterAlarm;
   }
   
   // Apply filters immediately if settings exist
@@ -730,10 +738,18 @@ function applyMonsterFilters() {
   const nameFilter = document.getElementById('monster-name-filter').value.toLowerCase();
   const hideDead = document.getElementById('hide-dead-monsters').checked;
   const hideImg = document.getElementById('hide-img-monsters').checked;
+  const monsterAlarm = document.getElementById('monster-alarm').checked;
   if(monsterFiltersSettings.altView){
 
   } else {
 
+    if(monsterAlarm){
+      alarmInterval = setInterval(() => {
+          location.reload();
+      }, 5000);
+    } else {
+      clearInterval(alarmInterval)
+    }
     const monsters = document.querySelectorAll('.monster-card');
     
     monsters.forEach(monster => {
@@ -753,16 +769,26 @@ function applyMonsterFilters() {
         monster.style.display = 'none';
       } else {
         monster.style.display = '';
+        
+        if(monsterAlarm){
+          if(!monster.innerText.includes('❤️ 0 / ')){
+            chrome.runtime.sendMessage({
+              type: "PLAY_SOUND"
+            });
+          }
+        }
       }
     });
   }
+
 
 
   // Saving filter settings :D
   const settings = {
     nameFilter: document.getElementById('monster-name-filter').value,
     hideDead: document.getElementById('hide-dead-monsters').checked,
-    hideImg: document.getElementById('hide-img-monsters').checked
+    hideImg: document.getElementById('hide-img-monsters').checked,
+    monsterAlarm: document.getElementById('monster-alarm').checked
   };
   chrome.runtime.sendMessage({
     type: "EXT_SAVE_FILTER_SETTINGS",
