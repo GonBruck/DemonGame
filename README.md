@@ -53,5 +53,7 @@
 - Opera GX
 - Chrome
 - Edge
+- Firefox
+- Brave
 
 ###
