@@ -18,7 +18,7 @@ if(!userId){
   console.log('Not logged in')
 }
 
-var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","altView":false}
+var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","hideImg":false}
 // Page-specific functionality mapping
 // This would be usefull if i add stuff to specific pages
 const extensionPageHandlers = {
@@ -697,8 +697,8 @@ function createFilterUI(monsterList, settings) {
       Hide defeated
     </label>
     <label style="display: flex; align-items: center; gap: 5px;">
-      <input type="checkbox" id="alternative-view">
-      Alternative view
+      <input type="checkbox" id="hide-img-monsters">
+      Hide images
     </label>
   `;
   
@@ -707,7 +707,7 @@ function createFilterUI(monsterList, settings) {
   
   document.getElementById('monster-name-filter').addEventListener('input', applyMonsterFilters);
   document.getElementById('hide-dead-monsters').addEventListener('change', applyMonsterFilters);
-  document.getElementById('alternative-view').addEventListener('change', applyMonsterFilters);
+  document.getElementById('hide-img-monsters').addEventListener('change', applyMonsterFilters);
   // Apply saved settings
   if (settings.nameFilter) {
     document.getElementById('monster-name-filter').value = settings.nameFilter;
@@ -716,9 +716,12 @@ function createFilterUI(monsterList, settings) {
   if (settings.hideDead) {
     document.getElementById('hide-dead-monsters').checked = settings.hideDead;
   }
+  if(settings.hideImg){
+    document.getElementById('hide-img-monsters').checked = settings.hideImg;
+  }
   
   // Apply filters immediately if settings exist
-  if (settings.nameFilter || settings.hideDead) {
+  if (settings.nameFilter || settings.hideDead || settings.hideImg) {
     applyMonsterFilters();
   }
 }
@@ -726,6 +729,7 @@ function createFilterUI(monsterList, settings) {
 function applyMonsterFilters() {
   const nameFilter = document.getElementById('monster-name-filter').value.toLowerCase();
   const hideDead = document.getElementById('hide-dead-monsters').checked;
+  const hideImg = document.getElementById('hide-img-monsters').checked;
   if(monsterFiltersSettings.altView){
 
   } else {
@@ -734,12 +738,17 @@ function applyMonsterFilters() {
     
     monsters.forEach(monster => {
       const monsterName = monster.querySelector('h3').textContent.toLowerCase();
-      const isDead = monster.querySelector('img').classList.contains('grayscale');
+      const monsterImg = monster.querySelector('img')
+      const isDead = monsterImg.classList.contains('grayscale');
       const hasLoot = monster.innerText.includes("Loot");
       
       const nameMatch = monsterName.includes(nameFilter);
       const shouldHideDead = hideDead && isDead && !hasLoot;
-      
+      if(hideImg){
+        monsterImg.style.display = 'none'
+      }else{
+        monsterImg.style.removeProperty('display');
+      }
       if ((nameFilter && !nameMatch) || shouldHideDead) {
         monster.style.display = 'none';
       } else {
@@ -753,7 +762,7 @@ function applyMonsterFilters() {
   const settings = {
     nameFilter: document.getElementById('monster-name-filter').value,
     hideDead: document.getElementById('hide-dead-monsters').checked,
-    altView: document.getElementById('alternative-view').checked
+    hideImg: document.getElementById('hide-img-monsters').checked
   };
   chrome.runtime.sendMessage({
     type: "EXT_SAVE_FILTER_SETTINGS",

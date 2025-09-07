@@ -27,7 +27,8 @@
   - Notification on loot error,etc
   - Gate info hidden by default and clicking Gate Header shows it
   - Instantly join a battle, ready to hit
-  - Alternative Table view (Work in progress)
+  - Monster filters (by name, hide dead, hide images)
+  - TODO: Alternative Table view
 - Battle page
   - Reduced monster size and centered text
   - Loot popup closes by clicking anywhere
