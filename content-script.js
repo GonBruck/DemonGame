@@ -18,7 +18,7 @@ if(!userId){
   console.log('Not logged in')
 }
 var alarmInterval = null;
-var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","hideImg":false, "monsterAlarm":false}
+var monsterFiltersSettings = {"hideDead":true,"nameFilter":"","hideImg":false, "monsterAlarm":false,"battleLimitAlarm":false}
 // Page-specific functionality mapping
 // This would be usefull if i add stuff to specific pages
 const extensionPageHandlers = {
@@ -317,7 +317,7 @@ if (document.querySelector('.game-topbar')) {
   } else {
     // Sidebar always first so we dont mess the layout
     initSideBar();
-    initDraggableFalse()
+    initDraggableFalse();
     //initChatPopup();
     // stats tracker was intended to be the popup with stats
     // and update live and always on top of any website, i left it out for now
@@ -327,7 +327,7 @@ if (document.querySelector('.game-topbar')) {
     // but left here as example
     //injectStyles();
     //injectWaveAltViewStyles()
-    initPageSpecificFunctionality()
+    initPageSpecificFunctionality();
   }
 }
 function initDraggableFalse(){
@@ -704,6 +704,10 @@ function createFilterUI(monsterList, settings) {
       <input type="checkbox" id="monster-alarm">
       Monster alarm
     </label>
+    <label style="display: flex; align-items: center; gap: 5px;">
+      <input type="checkbox" id="battle-limit-alarm">
+      Battle limit alarm
+    </label>
   `;
   
   // Insert before the monster list
@@ -713,6 +717,7 @@ function createFilterUI(monsterList, settings) {
   document.getElementById('hide-dead-monsters').addEventListener('change', applyMonsterFilters);
   document.getElementById('hide-img-monsters').addEventListener('change', applyMonsterFilters);
   document.getElementById('monster-alarm').addEventListener('change', applyMonsterFilters);
+  document.getElementById('battle-limit-alarm').addEventListener('change', applyMonsterFilters);
   // Apply saved settings
   if (settings.nameFilter) {
     document.getElementById('monster-name-filter').value = settings.nameFilter;
@@ -727,9 +732,12 @@ function createFilterUI(monsterList, settings) {
   if(settings.monsterAlarm){
     document.getElementById('monster-alarm').checked = settings.monsterAlarm;
   }
+  if(settings.battleLimitAlarm){
+    document.getElementById('battle-limit-alarm').checked = settings.battleLimitAlarm;
+  }
   
   // Apply filters immediately if settings exist
-  if (settings.nameFilter || settings.hideDead || settings.hideImg) {
+  if (settings.nameFilter || settings.hideDead || settings.hideImg || settings.monsterAlarm || settings.battleLimitAlarm) {
     applyMonsterFilters();
   }
 }
@@ -739,18 +747,21 @@ function applyMonsterFilters() {
   const hideDead = document.getElementById('hide-dead-monsters').checked;
   const hideImg = document.getElementById('hide-img-monsters').checked;
   const monsterAlarm = document.getElementById('monster-alarm').checked;
+  const battleLimitAlarm = document.getElementById('battle-limit-alarm').checked;
   if(monsterFiltersSettings.altView){
 
   } else {
 
-    if(monsterAlarm){
+    if(monsterAlarm || battleLimitAlarm){
       alarmInterval = setInterval(() => {
           location.reload();
       }, 5000);
     } else {
       clearInterval(alarmInterval)
     }
+
     const monsters = document.querySelectorAll('.monster-card');
+    var limitBattleCount = 0;
     
     monsters.forEach(monster => {
       const monsterName = monster.querySelector('h3').textContent.toLowerCase();
@@ -760,25 +771,46 @@ function applyMonsterFilters() {
       
       const nameMatch = monsterName.includes(nameFilter);
       const shouldHideDead = hideDead && isDead && !hasLoot;
+
+      // hides images
       if(hideImg){
         monsterImg.style.display = 'none'
       }else{
         monsterImg.style.removeProperty('display');
       }
+
+      if(monster.innerText.includes('Continue the Battle')){
+        limitBattleCount++
+      }
+
+      // name filter + dead filter
       if ((nameFilter && !nameMatch) || shouldHideDead) {
         monster.style.display = 'none';
       } else {
         monster.style.display = '';
         
+        // after filter alarm when alive and still not in battle
         if(monsterAlarm){
-          if(!monster.innerText.includes('❤️ 0 / ')){
+          if(!monster.innerText.includes('❤️ 0 / ') && !monster.innerText.includes('Continue the Battle')){
+            var volume = 0.2
             chrome.runtime.sendMessage({
-              type: "PLAY_SOUND"
+              type: "PLAY_SOUND",
+              //volume: volume
             });
           }
         }
       }
     });
+
+    // if found less than 3 ongoing battles run the alarm
+    if(battleLimitAlarm && limitBattleCount < 3){
+      var volume = 0.2
+      chrome.runtime.sendMessage({
+        type: "PLAY_SOUND",
+        //volume: volume
+      });
+    }
+
   }
 
 
@@ -788,7 +820,8 @@ function applyMonsterFilters() {
     nameFilter: document.getElementById('monster-name-filter').value,
     hideDead: document.getElementById('hide-dead-monsters').checked,
     hideImg: document.getElementById('hide-img-monsters').checked,
-    monsterAlarm: document.getElementById('monster-alarm').checked
+    monsterAlarm: document.getElementById('monster-alarm').checked,
+    battleLimitAlarm: document.getElementById('battle-limit-alarm').checked
   };
   chrome.runtime.sendMessage({
     type: "EXT_SAVE_FILTER_SETTINGS",

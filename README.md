@@ -28,7 +28,9 @@
   - Gate info hidden by default and clicking Gate Header shows it
   - Instantly join a battle, ready to hit
   - Monster filters (by name, hide dead, hide images)
-  - Monster Alarm (this will refresh page every 5 secs and if the filtered monster appear an alarm sounds)
+  - Alarms (Do not use together)
+    - Monster Alarm (this will refresh page every 5 secs and if the filtered monster appear the alarm plays, it ignores ongoing battles)
+    - Battle limit Alarm (this will refresh page every 5 secs and if you have less than 3 ongoing battles the alarm plays, EVEN IF MONSTERS ARE FILTERED OUT)
   - TODO: Alternative Table view
 - Battle page
   - Reduced monster size and centered text
