@@ -73,6 +73,7 @@ function initInventoryMods(){
 
 function initPetMods(){
   initPetTotalDmg()
+  initPetRequiredFood()
 }
 
 function initStatMods(){
@@ -194,6 +195,14 @@ function initPetTotalDmg(){
   totalDmgContainer.id = 'total-pet-damage'
   totalDmgContainer.innerText = 'Total pet damage: '+ finalAmount
   document.querySelector('.section-title').appendChild(totalDmgContainer)
+}
+function initPetRequiredFood(){
+  document.querySelectorAll('.exp-top').forEach(x=>{
+    var curExp = Number.parseInt(x.querySelector('.exp-current').innerText)
+    var reqExp = Number.parseInt(x.querySelector('.exp-required').innerText)
+    var needed = Math.ceil((reqExp - curExp) /300)
+    x.insertAdjacentHTML('afterEnd',`<div style='margin-top:5px;'><span style='color:green;margin-top:5px'>Requires ${needed} (x300)</span></div>`)
+  })
 }
 
 function initItemTotalDmg(){
@@ -409,7 +418,8 @@ function initSideBar(){
     </div>
     <ul class="sidebar-menu">
       <li><a href="pvp.php?rank=3"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
-      <li><a href="orc_cull_event.php"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event Orc war</a></li>
+      <li><a href="orc_cull_event.php"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event</a></li>
+      <li><a href="active_wave.php?event=2&wave=6"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event Battlefield</a></li>
       <li><a href="active_wave.php?gate=3&wave=5"><img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Gate Grakthar</a></li>
       <li><a href="inventory.php"><img src="images/menu/compressed_chest.webp" alt="Inventory"> Inventory & Equipment</a></li>
       <li><a href="pets.php"><img src="images/menu/compressed_eggs_menu.webp" alt="Pets"> Pets & Eggs</a></li>

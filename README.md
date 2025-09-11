@@ -43,6 +43,7 @@
   - Total Item Damage
 - Pet Page
   - Total Pet Damage
+  - Amount of pet food required (the ones with 300 xp)
 - Stat Page
   - Total Attack Damage vs 0 vs 25 vs 50 DEF
 - PvP Arena
