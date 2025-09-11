@@ -45,6 +45,9 @@
   - Total Pet Damage
 - Stat Page
   - Total Attack Damage vs 0 vs 25 vs 50 DEF
+- PvP Arena
+  - Added highlight to Defender fights to easily tell them apart from Attacks
+  - Added new column of Points to show gains and losses
 
 ###
 

@@ -43,6 +43,8 @@ function initWaveMods() {
 
 function initPvPMods(){
   initPvPBannerFix()
+  initPvPHighlight()
+  initPvPCollapsibles()
 }
 
 function initDashboardTools() {
@@ -87,6 +89,43 @@ function initPvPBannerFix(){
   }
   contentArea.prepend(pvpHero)
   document.querySelector('br').remove()
+}
+
+function initPvPHighlight(){
+  document.querySelector("table.table > thead > tr").insertAdjacentHTML('afterBegin',`<th style='text-align:center;'>Points</th>`)
+  var total = 0;
+  document.querySelector("table.table > tbody").querySelectorAll('tr').forEach( x => {
+      var res = x.children[2].innerText;
+      var role = x.children[0].innerText
+      if(role == 'Defender'){
+          x.style.background ='#1f2533'
+      }
+      
+      if(res == 'Loss'){
+          if(role == 'Defender'){
+              x.insertAdjacentHTML('afterBegin',`<td class="" style="color:#ff9a9a;text-align:center">-5</td>`)
+              total-=5
+          } else {
+              x.insertAdjacentHTML('afterBegin',`<td class="" style="color:#ff9a9a;text-align:center">-15</td>`)
+              total-=15
+          }
+      } else if(res == 'Win'){
+          if(role == 'Defender'){
+              x.insertAdjacentHTML('afterBegin',`<td class="" style="color:#8ff0a4;text-align:center">+5</td>`)
+              total+=5
+          } else {
+              x.insertAdjacentHTML('afterBegin',`<td class="" style="color:#8ff0a4;text-align:center">+10</td>`)
+              total+=10
+          }
+      } else {
+          if(role == 'Defender'){
+              x.insertAdjacentHTML('afterBegin',`<td class="" style="color:#8ff0a4;text-align:center">+5</td>`)
+              total+=5
+          } else {
+              x.insertAdjacentHTML('afterBegin',`<td class="" style="text-align:center">0</td>`)
+          }
+      }
+  })
 }
 
 /*
