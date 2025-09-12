@@ -49,6 +49,9 @@
 - PvP Arena
   - Added highlight to Defender fights to easily tell them apart from Attacks
   - Added new column of Points to show gains and losses
+- Events
+  - Orc event leaderboards side by side
+  - Big image removed
 
 ###
 

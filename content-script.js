@@ -464,7 +464,7 @@ function initSideBar(){
       <a href="game_dash.php" style="text-decoration:none;"><h2>Game Menu</h2></a>
     </div>
     <ul class="sidebar-menu">
-      <li><a href="pvp.php?rank=3"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
+      <li><a href="pvp.php?rank=4"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
       <li class="has-submenu">
         <a href="orc_cull_event.php">
           <img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event
