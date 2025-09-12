@@ -63,3 +63,12 @@
 - Brave
 
 ###
+
+-----------------
+# Fork
+## Features/Changes
+
+* Sidebar
+    * Added toggleable submenus
+* Added toggleable 24h support for server time display
+* Fix: Favicon: Useing extension icon to fix missing favicon
