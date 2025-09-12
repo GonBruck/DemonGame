@@ -1431,11 +1431,27 @@ function initPvPCollapsibles(){
 function initTimeFormatToggle(sidebar) {
   const toggle = sidebar.querySelector('#timeFormatToggle');
   const toggleSlider = sidebar.querySelector('.toggle-slider');
+  const label12h = sidebar.querySelector('.toggle-label-12h');
+  const label24h = sidebar.querySelector('.toggle-label-24h');
+  
+  // Function to update label colors
+  function updateLabelColors(is24h) {
+    if (label12h && label24h) {
+      if (is24h) {
+        label12h.style.color = '#888';
+        label24h.style.color = '#333';
+      } else {
+        label12h.style.color = '#333';
+        label24h.style.color = '#999';
+      }
+    }
+  }
   
   // Load saved setting
   chrome.storage.local.get(['timeFormat24h'], (result) => {
     const is24h = result.timeFormat24h || false;
     toggle.checked = is24h;
+    updateLabelColors(is24h); // Set initial colors
     if (is24h) {
       toggleTimeFormat(true);
     }
@@ -1448,6 +1464,9 @@ function initTimeFormatToggle(sidebar) {
     // Save setting
     chrome.storage.local.set({ timeFormat24h: is24h });
     
+    // Update label colors
+    updateLabelColors(is24h);
+    
     // Apply time format
     toggleTimeFormat(is24h);
   });
@@ -1457,26 +1476,6 @@ function initTimeFormatToggle(sidebar) {
     toggle.checked = !toggle.checked;
     toggle.dispatchEvent(new Event('change'));
   });
-
-  // Debug: HTML-Struktur überprüfen
-  setTimeout(() => {
-    console.log('=== TOGGLE DEBUG ===');
-    const container = sidebar.querySelector('.toggle-container');
-    console.log('Container HTML:', container?.outerHTML);
-  
-    const label12h = sidebar.querySelector('.toggle-label-12h');
-    const label24h = sidebar.querySelector('.toggle-label-24h');
-  
-    console.log('12H Label:', label12h);
-    console.log('24H Label:', label24h);
-  
-    if (label12h) {
-      console.log('12H computed style:', getComputedStyle(label12h).color);
-    }
-    if (label24h) {
-      console.log('24H computed style:', getComputedStyle(label24h).color);
-    }
-  }, 1000);
 }
 
 // Optimized time format toggle function
@@ -1733,18 +1732,6 @@ function addSidebarStyles() {
       right: 8px;
       top: 50%;
       transform: translateY(-50%);
-    }
-    
-    .toggle-input:not(:checked) ~ .toggle-slider .toggle-label-12h {
-      color: #333 !important;
-    }
-
-    .toggle-input:not(:checked) ~ .toggle-slider .toggle-label-24h {
-      color: #ff0000 !important;
-    }
-
-    .toggle-input:checked ~ .toggle-slider .toggle-label-24h {
-      color: #333 !important;
     }
     
     /* Content area */
