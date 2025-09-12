@@ -31,28 +31,7 @@ const extensionPageHandlers = {
   '/stats.php': initStatMods,
   '/pvp.php': initPvPMods,
   // more pages here with their handlers
-  'orc_cull_event.php': initEventMods,
 };
-
-function initEventMods(){
-  initRankingSideBySide()
-}
-function initRankingSideBySide(){
-  document.querySelector('img[alt="Orc King of Grakthar"]').remove()
-
-  var container = document.createElement('div');
-  container.style.cssText=`display:flex;`
-  var panels = document.querySelectorAll('div.panel');
-  var topDmg = panels[panels.length-2]
-  var topKills = panels[panels.length-1]
-  topDmg.querySelector('table').classList.add('event-table')
-  topKills.querySelector('table').classList.add('event-table')
-  topKills.style.marginLeft = "20px"
-  container.appendChild(topDmg)
-  container.appendChild(topKills)
-  
-  document.querySelector('.wrap').appendChild(container)
-}
 
 function initWaveMods() {
   initGateCollapse()
@@ -65,7 +44,8 @@ function initWaveMods() {
 function initPvPMods(){
   initPvPBannerFix()
   initPvPHighlight()
-  //initPvPCollapsibles()
+  initPvPCollapsibles()
+  initRankDetection()
 }
 
 function initDashboardTools() {
@@ -100,6 +80,35 @@ function initPetMods(){
 function initStatMods(){
   initPlayerAtkDamage()
 }
+
+function initFaviconFix() {
+  // Test if a favicon already exists
+  const existingFavicon = document.querySelector('link[rel*="icon"]');
+  
+  if (!existingFavicon) {
+    // Create a new favicon element
+    const faviconLink = document.createElement('link');
+    faviconLink.rel = 'icon';
+    faviconLink.type = 'image/png';
+    faviconLink.href = chrome.runtime.getURL('demon-logo.png'); // Path to your extension logo
+
+    // Add favicon to head
+    document.head.appendChild(faviconLink);
+
+    console.log('✅ Favicon successfully added:', faviconLink.href);
+  } else {
+    // Replace existing favicon with extension logo
+    existingFavicon.href = chrome.runtime.getURL('demon-logo.png');
+    console.log('✅ Replaced existing favicon with demon-logo.png');
+  }
+
+  // Optional: Also add apple-touch-icon for mobile devices
+  const appleTouchIcon = document.createElement('link');
+  appleTouchIcon.rel = 'apple-touch-icon';
+  appleTouchIcon.href = chrome.runtime.getURL('demon-logo.png');
+  document.head.appendChild(appleTouchIcon);
+}
+
 
 function initPvPBannerFix(){
   var contentArea = document.querySelector('.content-area');
@@ -382,11 +391,18 @@ function initAlternativeInventoryView(){
 if (document.querySelector('.game-topbar')) {
   // We should wait for the DOM to load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSideBar);
+    document.addEventListener('DOMContentLoaded', function () { 
+      initSideBar(); 
+      initDraggableFalse();
+      initFaviconFix();
+      initRankDetection();
+    });
   } else {
     // Sidebar always first so we dont mess the layout
     initSideBar();
     initDraggableFalse();
+    initFaviconFix();
+    initRankDetection();
     //initChatPopup();
     // stats tracker was intended to be the popup with stats
     // and update live and always on top of any website, i left it out for now
@@ -422,7 +438,252 @@ function initChatPopup(){
   
 }
 
+// Enhanced getDynamicRankValue that uses stored values
+function getDynamicRankValue() {
+  // If we're on PvP page, try to read directly
+  if (window.location.href.includes('pvp.php')) {
+    const rankBadgeElement = document.querySelector('span.rank-badge');
+    if (rankBadgeElement) {
+      const rankBadgeValue = rankBadgeElement.innerText.trim();
+      
+      const rankMapping = {
+        'Novice': 1,
+        'Iron': 2,
+        'Bronze': 3,
+        'Silver': 4,
+        'Gold': 5,
+        'Platinum': 6,
+        'Mythril': 7,
+        'Adamantite': 8,
+        'Legendary': 9,
+        'Ascendant': 10
+      };
+      
+      const result = rankMapping[rankBadgeValue] || 4;
+      console.log(`🎯 Direct read from PvP page: ${rankBadgeValue} (${result})`);
+      return result;
+    }
+  }
+  
+  // Otherwise use stored value
+  return getStoredRankValueSync();
+}
 
+// Function to update PvP link with stored rank
+async function updatePvPLinkWithStoredRank() {
+  const rankValue = await getStoredRankValue();
+  
+  // Update the PvP link in sidebar if it exists
+  const pvpLink = document.querySelector('#game-sidebar a[href*="pvp.php"]');
+  if (pvpLink) {
+    const newHref = `pvp.php?rank=${rankValue}`;
+    pvpLink.href = newHref;
+    console.log(`🔗 PvP link updated to rank ${rankValue}`);
+  }
+}
+
+// Function to get and store rank when on PvP page
+function detectAndStoreRank() {
+  // Only run this on PvP pages
+  if (!window.location.href.includes('pvp.php')) {
+    return;
+  }
+  
+  console.log("🎯 On PvP page - detecting rank...");
+  
+  const rankBadgeElement = document.querySelector('span.rank-badge');
+  if (rankBadgeElement) {
+    const rankBadgeValue = rankBadgeElement.innerText.trim();
+    
+    const rankMapping = {
+      'Novice': 1,
+      'Iron': 2,
+      'Bronze': 3,
+      'Silver': 4,
+      'Gold': 5,
+      'Platinum': 6,
+      'Mythril': 7,
+      'Adamantite': 8,
+      'Legendary': 9,
+      'Ascendant': 10
+    };
+    
+    const rankValue = rankMapping[rankBadgeValue] || 4;
+    
+    // Store in chrome.storage
+    chrome.storage.local.set({ 
+      playerRank: rankValue,
+      playerRankName: rankBadgeValue,
+      rankLastUpdated: Date.now()
+    }, () => {
+      console.log(`✅ Rank stored: ${rankBadgeValue} (${rankValue})`);
+    });
+    
+    // Also store in sessionStorage as backup
+    sessionStorage.setItem('playerRank', rankValue);
+    sessionStorage.setItem('playerRankName', rankBadgeValue);
+    
+  } else {
+    console.log("❌ No rank badge found on PvP page");
+    
+    // Try to detect rank from URL parameter as fallback
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentRank = urlParams.get('rank');
+    if (currentRank) {
+      console.log(`ℹ️ Using rank from URL parameter: ${currentRank}`);
+      chrome.storage.local.set({ 
+        playerRank: parseInt(currentRank),
+        rankLastUpdated: Date.now()
+      });
+    }
+  }
+}
+
+// Function to get stored rank value
+async function getStoredRankValue() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['playerRank'], (result) => {
+      if (result.playerRank) {
+        console.log(`📦 Using stored rank: ${result.playerRank}`);
+        resolve(result.playerRank);
+      } else {
+        // Fallback to sessionStorage
+        const sessionRank = sessionStorage.getItem('playerRank');
+        if (sessionRank) {
+          console.log(`📦 Using session rank: ${sessionRank}`);
+          resolve(parseInt(sessionRank));
+        } else {
+          console.log(`📦 No stored rank found, using default: 4`);
+          resolve(4);
+        }
+      }
+    });
+  });
+}
+
+// Synchronous version for immediate use
+function getStoredRankValueSync() {
+  // Try sessionStorage first for immediate access
+  const sessionRank = sessionStorage.getItem('playerRank');
+  if (sessionRank) {
+    console.log(`📦 Using session rank (sync): ${sessionRank}`);
+    return parseInt(sessionRank);
+  }
+  
+  console.log(`📦 No session rank found, using default: 4`);
+  return 4;
+}
+
+// Enhanced getDynamicRankValue that uses stored values
+function getDynamicRankValue() {
+  // If we're on PvP page, try to read directly
+  if (window.location.href.includes('pvp.php')) {
+    const rankBadgeElement = document.querySelector('span.rank-badge');
+    if (rankBadgeElement) {
+      const rankBadgeValue = rankBadgeElement.innerText.trim();
+      
+      const rankMapping = {
+        'Novice': 1,
+        'Iron': 2,
+        'Bronze': 3,
+        'Silver': 4,
+        'Gold': 5,
+        'Platinum': 6,
+        'Mythril': 7,
+        'Adamantite': 8,
+        'Legendary': 9,
+        'Ascendant': 10
+      };
+      
+      const result = rankMapping[rankBadgeValue] || 4;
+      console.log(`🎯 Direct read from PvP page: ${rankBadgeValue} (${result})`);
+      return result;
+    }
+  }
+  
+  // Otherwise use stored value
+  return getStoredRankValueSync();
+}
+
+// Function to update PvP link with stored rank
+async function updatePvPLinkWithStoredRank() {
+  const rankValue = await getStoredRankValue();
+  
+  // Update the PvP link in sidebar if it exists
+  const pvpLink = document.querySelector('#game-sidebar a[href*="pvp.php"]');
+  if (pvpLink) {
+    const newHref = `pvp.php?rank=${rankValue}`;
+    pvpLink.href = newHref;
+    console.log(`🔗 PvP link updated to rank ${rankValue}`);
+  }
+}
+
+// Debug function that works on any page
+function debugStoredRank() {
+  console.log("=== STORED RANK DEBUG START ===");
+  console.log(`Current page: ${window.location.pathname}`);
+  
+  // Check chrome.storage
+  chrome.storage.local.get(['playerRank', 'playerRankName', 'rankLastUpdated'], (result) => {
+    console.log("Chrome storage content:", result);
+    
+    if (result.rankLastUpdated) {
+      const lastUpdate = new Date(result.rankLastUpdated);
+      console.log(`Last updated: ${lastUpdate.toLocaleString()}`);
+    }
+  });
+  
+  // Check sessionStorage
+  const sessionRank = sessionStorage.getItem('playerRank');
+  const sessionRankName = sessionStorage.getItem('playerRankName');
+  console.log(`Session storage rank: ${sessionRank}`);
+  console.log(`Session storage rank name: ${sessionRankName}`);
+  
+  // Test the getDynamicRankValue function
+  const currentRank = getDynamicRankValue();
+  console.log(`getDynamicRankValue() returns: ${currentRank}`);
+  
+  console.log("=== STORED RANK DEBUG END ===");
+}
+
+// Initialize rank detection based on current page
+function initRankDetection() {
+  if (window.location.href.includes('pvp.php')) {
+    // On PvP page - detect and store rank
+    console.log("🎯 Initializing rank detection on PvP page");
+    
+    // Try immediately
+    detectAndStoreRank();
+    
+    // Also try after a delay in case elements load later
+    setTimeout(detectAndStoreRank, 1000);
+    setTimeout(detectAndStoreRank, 3000);
+    
+    // Set up observer for dynamic loading
+    const observer = new MutationObserver(() => {
+      const rankBadge = document.querySelector('span.rank-badge');
+      if (rankBadge) {
+        console.log("🔄 Rank badge detected after DOM change!");
+        detectAndStoreRank();
+        observer.disconnect();
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    setTimeout(() => observer.disconnect(), 10000);
+    
+  } else {
+    // On other pages - just log what we have stored
+    console.log("📄 On non-PvP page - using stored rank");
+    debugStoredRank();
+  }
+}
+
+// Sidebar Initialization
 function initSideBar(){
   // Create and inject the sidebar and layout structure
   // Create the main wrapper container (some pages dont have it and we have to create it)
@@ -433,15 +694,43 @@ function initSideBar(){
   // Create the sidebar
   const sidebar = document.createElement('aside');
   sidebar.id = 'game-sidebar';
+  
+  // Dynamically set Gate Grakthar link based on user level
+  let gateLink = "active_wave.php?gate=3&wave=3";
+  const levelEl = document.querySelector('.gtb-level');
+  if (levelEl) {
+    const levelText = levelEl.textContent.replace(/[^0-9]/g, '');
+    const level = parseInt(levelText, 10);
+    if (level >= 50) {
+      gateLink = "active_wave.php?gate=3&wave=5";
+    }
+  }
+
   sidebar.innerHTML = `
     <div class="sidebar-header">
       <a href="game_dash.php" style="text-decoration:none;"><h2>Game Menu</h2></a>
     </div>
     <ul class="sidebar-menu">
-      <li><a href="pvp.php?rank=4"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
-      <li><a href="orc_cull_event.php"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event</a></li>
-      <li><a href="active_wave.php?event=2&wave=6"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event Battlefield</a></li>
-      <li><a href="active_wave.php?gate=3&wave=5"><img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Gate Grakthar</a></li>
+      <li><a href="pvp.php?rank=${getDynamicRankValue()}"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
+      <li class="has-submenu">
+        <a href="orc_cull_event.php">
+          <img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event
+        </a>
+        <span class="submenu-toggle"></span>
+        <ul class="submenu">
+          <li><a href="active_wave.php?event=2&wave=6"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event Battlefield</a></li>
+        </ul>
+      </li>
+      <li class="has-submenu">
+        <a href="${gateLink}">
+          <img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Gate Grakthar
+        </a>
+        <span class="submenu-toggle"></span>
+        <ul class="submenu">
+          <li><a href="active_wave.php?gate=3&wave=3"><img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Grakthar | Wave 1</a></li>
+          <li><a href="active_wave.php?gate=3&wave=5"><img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Grakthar | Wave 2</a></li>
+        </ul>
+      </li>
       <li><a href="inventory.php"><img src="images/menu/compressed_chest.webp" alt="Inventory"> Inventory & Equipment</a></li>
       <li><a href="pets.php"><img src="images/menu/compressed_eggs_menu.webp" alt="Pets"> Pets & Eggs</a></li>
       <li><a href="stats.php"><img src="images/menu/compressed_stats_menu.webp" alt="Stats"> Stats</a></li>
@@ -455,8 +744,166 @@ function initSideBar(){
       <li><a href="patches.php"><img src="images/menu/compressed_patches.webp" alt="PatchNotes"> Patch Notes</a></li>
       <li><a href="index.php"><img src="images/menu/compressed_manga.webp" alt="Manga"> Manga-Manhwa-Manhua</a></li>
     </ul>
+    
+    <!-- Settings Section -->
+    <div class="sidebar-settings">
+      <div class="settings-header">
+        <h3>Settings</h3>
+      </div>
+      <div class="settings-content">
+        <div class="setting-item">
+          <label for="timeFormatToggle">12H/24H</label>
+          <div class="toggle-container">
+            <input type="checkbox" id="timeFormatToggle" class="toggle-input">
+            <span class="toggle-slider"></span>
+            <span class="toggle-labels">
+              <span class="toggle-label-12h">12</span>
+              <span class="toggle-label-24h">24</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
+
+/**********************************
+ * Sidebar Submenu Initialization *
+ **********************************/
+  /**
+   * How to add submenus to the sidebar:
+   * 
+   * 1. Create a list item with the "has-submenu" class
+   * 2. Add the main menu link
+   * 3. Add a span with class "submenu-toggle" for the dropdown arrow
+   * 4. Include a nested <ul> with class "submenu" containing submenu items
+   * 
+   * Example:
+   * <li class="has-submenu">
+   *   <a href="main-link.php">
+   *     <img src="/images/icon.webp" alt="Menu Item"> Menu Item
+   *   </a>
+   *   <span class="submenu-toggle"></span>
+   *   <ul class="submenu">
+   *     <li><a href="submenu-link.php"><img src="/images/icon.webp" alt="Submenu"> Submenu Item</a></li>
+   *     <li><a href="another-link.php"><img src="/images/icon.webp" alt="Submenu"> Another Item</a></li>
+   *   </ul>
+   * </li>
+  */
+
+  // Initialize submenu toggle arrows and restore saved states from cookies
+  sidebar.querySelectorAll('.submenu-toggle').forEach(toggle => {
+    // Get parent menu item and its submenu
+    const parentLi = toggle.closest('.has-submenu');
+    const submenu = parentLi.querySelector('.submenu');
+    const menuId = parentLi.querySelector('a').textContent.trim().replace(/\s+/g, '_');
+    
+    // Check if there's a saved state in cookie
+    const savedState = getCookieExtension('submenu_' + menuId);
+    if (savedState === 'open') {
+      // Open the submenu
+      submenu.classList.add('open');
+      toggle.innerHTML = '<span style="display:inline-block;">⯅</span>'; // Arrow up
+    } else {
+      toggle.innerHTML = '<span style="display:inline-block; transform: translateY(-2px);">⯆</span>'; // Default arrow down
+    }
+  });
   
+  // Modified click handler to save submenu state to cookie
+  sidebar.addEventListener('click', function(e) {
+    // Determine if the click was on a toggle element or its child span
+    let toggleEl = null;
+    if (e.target.classList.contains('submenu-toggle')) {
+      toggleEl = e.target;
+    } else if (
+      e.target.tagName === 'SPAN' &&
+      e.target.parentElement &&
+      e.target.parentElement.classList.contains('submenu-toggle')
+    ) {
+      toggleEl = e.target.parentElement;
+    }
+    
+    if (toggleEl) {
+      e.preventDefault(); // Prevent default link behavior
+      const parentLi = toggleEl.closest('.has-submenu');
+      const submenu = parentLi.querySelector('.submenu');
+      const menuId = parentLi.querySelector('a').textContent.trim().replace(/\s+/g, '_');
+      
+      if (submenu) {
+        // Toggle the 'open' class to show/hide the submenu
+        submenu.classList.toggle('open');
+        
+        // Save state to cookie (expires in 30 days)
+        const isOpen = submenu.classList.contains('open');
+        document.cookie = `submenu_${menuId}=${isOpen ? 'open' : 'closed'}; path=/; max-age=${60*60*24*30}; SameSite=Lax`;
+        
+        // Update the arrow direction based on submenu state
+        if (isOpen) {
+          // Arrow points up when submenu is open
+          toggleEl.innerHTML = '<span style="display:inline-block;">⯅</span>';
+        } else {
+          // Arrow points down when submenu is closed, with slight vertical adjustment
+          toggleEl.innerHTML = '<span style="display:inline-block; transform: translateY(-2px);">⯆</span>'; 
+        }
+        
+        // Center the arrow in the toggle button
+        toggleEl.style.display = 'flex';
+        toggleEl.style.alignItems = 'center';
+        toggleEl.style.justifyContent = 'center';
+      }
+    }
+  });
+  // The arrow initialization is now handled in the previous section
+
+  // Add click event listener to the sidebar to handle submenu interactions
+  sidebar.addEventListener('click', function(e) {
+    // Determine if the click was on a toggle element or its child span
+    let toggleEl = null;
+    if (e.target.classList.contains('submenu-toggle')) {
+      // Direct click on the toggle element
+      toggleEl = e.target;
+    } else if (
+      e.target.tagName === 'SPAN' &&
+      e.target.parentElement &&
+      e.target.parentElement.classList.contains('submenu-toggle')
+    ) {
+      // Click on the span inside the toggle element
+      toggleEl = e.target.parentElement;
+    }
+    
+    if (toggleEl) {
+      e.preventDefault(); // Prevent default link behavior
+      const parentLi = toggleEl.closest('.has-submenu'); // Get the parent list item
+      const submenu = parentLi.querySelector('.submenu'); // Find the submenu element
+      
+      if (submenu) {
+        // Toggle the 'open' class to show/hide the submenu
+        submenu.classList.toggle('open');
+        
+        // Update the arrow direction based on submenu state
+        if (submenu.classList.contains('open')) {
+          // Arrow points up when submenu is open
+          toggleEl.innerHTML = '<span style="display:inline-block;">⯅</span>';
+        } else {
+          // Arrow points down when submenu is closed, with slight vertical adjustment
+          toggleEl.innerHTML = '<span style="display:inline-block; transform: translateY(-2px);">⯆</span>'; 
+        }
+        
+        // Center the arrow in the toggle button
+        toggleEl.style.display = 'flex';
+        toggleEl.style.alignItems = 'center';
+        toggleEl.style.justifyContent = 'center';
+        // Note: The frame stays centered while only the arrow symbol is adjusted
+      }
+    }
+  });
+
+  // Initialize time format toggle
+  initTimeFormatToggle(sidebar);
+
+/****************************
+ * End Sidebar Submenu Init *
+ ****************************/
+
   const contentArea = document.createElement('div');
   contentArea.className = 'content-area';
   if(noContainerPage){
@@ -496,125 +943,7 @@ function initSideBar(){
   //document.body.appendChild(toggleButton);
   
   // Add the necessary CSS
-  document.body.style.paddingTop = "55px";
-  document.body.style.paddingLeft = "0px";
-  document.body.style.margin="0px";
-  const style = document.createElement('style');
-  style.textContent = `
-    /* Main layout with sidebar */
-    .main-wrapper {
-      display: flex;
-      min-height: calc(100vh - 74px);
-    }
-    
-    /* Sidebar styles */
-    #game-sidebar {
-      width: 250px;
-      background: rgba(18,18,18,0.95);
-      border-right: 1px solid rgba(255, 255, 255, 0.06);
-      flex-shrink: 0;
-      padding: 15px 0;
-      overflow-y: auto;
-      position: fixed;
-      height: calc(100vh - 74px);
-    }
-    
-    .sidebar-header {
-      padding: 0 20px 15px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      margin-bottom: 15px;
-    }
-    
-    .sidebar-header h2 {
-      color: #FFD369;
-      margin: 0;
-      font-size: 1.4rem;
-    }
-    
-    .sidebar-menu {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .sidebar-menu li {
-      /*border-bottom: 1px solid #2a2a2a;*/
-    }
-    
-    .sidebar-menu li:last-child {
-      border-bottom: none;
-    }
-    
-    .sidebar-menu a {
-      display: flex;
-      align-items: center;
-      padding: 12px 20px;
-      color: #e0e0e0;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-    
-    .sidebar-menu a:hover {
-      background-color: #252525;
-      color: #FFD369;
-    }
-    
-    .sidebar-menu img {
-      width: 24px;
-      height: 24px;
-      margin-right: 12px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-    
-    /* Content area */
-    .content-area {
-      flex: 1;
-      padding: 20px;
-      margin-left: 250px;
-    }
-    
-    
-    /* Mobile styles */
-    /*
-    @media (max-width: 900px) {
-      .main-wrapper {
-        flex-direction: column;
-      }
-      
-      #game-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #333;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-      }
-      
-      #game-sidebar.sidebar-open {
-        max-height: 400px;
-      }
-      
-      .menu-toggle {
-        display: block;
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 1000;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: #1e1e1e;
-        border: 1px solid #333;
-        color: #FFD369;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-      }
-    }
-    */
-  `;
-  document.head.appendChild(style);
+  addSidebarStyles();
   
   /*
   // *** MOBILE ***
@@ -633,6 +962,12 @@ function initSideBar(){
   window.addEventListener('resize', checkMobile);
   // *** END MOBILE ***
   */
+
+  // Update PvP link after sidebar is created (in case rank-badge loads later)
+  /*setTimeout(() => {
+    updatePvPLinkWithStoredRank();
+  }, 500);*/
+
 }
 
 function initStatsTracker() {  
@@ -1339,4 +1674,420 @@ function initAnyClickClosesModal(){
   document.getElementById('lootModal').addEventListener('click', function(event) {
     this.style.display = 'none';
   });
+}
+
+function initPvPCollapsibles(){
+  // This function needs to be implemented
+}
+
+// Time format toggle initialization
+function initTimeFormatToggle(sidebar) {
+  const toggle = sidebar.querySelector('#timeFormatToggle');
+  const toggleSlider = sidebar.querySelector('.toggle-slider');
+  const label12h = sidebar.querySelector('.toggle-label-12h');
+  const label24h = sidebar.querySelector('.toggle-label-24h');
+  
+  // Function to update label colors
+  function updateLabelColors(is24h) {
+    if (label12h && label24h) {
+      if (is24h) {
+        label12h.style.color = '#888';
+        label24h.style.color = '#333';
+      } else {
+        label12h.style.color = '#333';
+        label24h.style.color = '#999';
+      }
+    }
+  }
+  
+  // Load saved setting
+  chrome.storage.local.get(['timeFormat24h'], (result) => {
+    const is24h = result.timeFormat24h || false;
+    toggle.checked = is24h;
+    updateLabelColors(is24h); // Set initial colors
+    if (is24h) {
+      toggleTimeFormat(true);
+    }
+  });
+  
+  // Add event listener for checkbox change
+  toggle.addEventListener('change', function() {
+    const is24h = this.checked;
+    
+    // Save setting
+    chrome.storage.local.set({ timeFormat24h: is24h });
+    
+    // Update label colors
+    updateLabelColors(is24h);
+    
+    // Apply time format
+    toggleTimeFormat(is24h);
+  });
+  
+  // Add click event listener for the toggle slider
+  toggleSlider.addEventListener('click', function() {
+    toggle.checked = !toggle.checked;
+    toggle.dispatchEvent(new Event('change'));
+  });
+}
+
+// Optimized time format toggle function
+function toggleTimeFormat(use24h) {
+  const originalElement = document.querySelector('#server_time');
+  const existingNewElement = document.querySelector('#server_time_24h');
+
+  // Clear any existing interval
+  if (window.serverTimeInterval) {
+    clearInterval(window.serverTimeInterval);
+    window.serverTimeInterval = null;
+  }
+
+  // Remove the previously created new element if it exists
+  if (existingNewElement) {
+    existingNewElement.remove();
+  }
+
+  if (!originalElement) {
+    console.error('Original element with id server_time not found.');
+    return;
+  }
+
+  if (use24h) {
+    // Hide the original element and create 24h version
+    originalElement.style.display = 'none';
+
+    // Create a new element for the 24-hour time
+    const newTimeElement = document.createElement('span');
+    newTimeElement.id = 'server_time_24h';
+    newTimeElement.className = originalElement.className;
+    
+    if (originalElement.hasAttribute('title')) {
+      newTimeElement.setAttribute('title', originalElement.getAttribute('title'));
+    }
+
+    // Insert the new element after the original element
+    originalElement.parentNode.insertBefore(newTimeElement, originalElement.nextSibling);
+
+    // Function to convert 12h to 24h format
+    function updateServerTimeFromHidden() {
+      const textContent = originalElement.textContent.trim();
+      const match = textContent.match(/^(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/);
+
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = match[2];
+        const seconds = match[3];
+        const period = match[4];
+
+        if (period === 'PM' && hours < 12) {
+          hours += 12;
+        } else if (period === 'AM' && hours === 12) {
+          hours = 0;
+        }
+
+        const formattedHours = hours.toString().padStart(2, '0');
+        newTimeElement.textContent = `${formattedHours}:${minutes}:${seconds}`;
+      } else {
+        console.warn('Could not parse time format from original element:', textContent);
+      }
+    }
+
+    // Initial call and set up interval
+    updateServerTimeFromHidden();
+    window.serverTimeInterval = setInterval(updateServerTimeFromHidden, 1000);
+  } else {
+    // Show the original 12h format
+    originalElement.style.display = '';
+  }
+}
+
+// Enhanced CSS styles including settings section and toggle
+function addSidebarStyles() {
+  document.body.style.paddingTop = "55px";
+  document.body.style.paddingLeft = "0px";
+  document.body.style.margin = "0px";
+  
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Main layout with sidebar */
+    .main-wrapper {
+      display: flex;
+      min-height: calc(100vh - 74px);
+    }
+    
+    /* Sidebar styles */
+    #game-sidebar {
+      width: 250px;
+      background: rgba(18,18,18,0.95);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
+      padding: 15px 0 0 0;
+      overflow-y: auto;
+      position: fixed;
+      height: calc(100vh - 74px);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar-header {
+      padding: 0 20px 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 15px;
+    }
+    
+    .sidebar-header h2 {
+      color: #FFD369;
+      margin: 0;
+      font-size: 1.4rem;
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    
+    .sidebar-menu li {
+      /*border-bottom: 1px solid #2a2a2a;*/
+    }
+    
+    .sidebar-menu li:last-child {
+      border-bottom: none;
+    }
+    
+    .sidebar-menu a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: #e0e0e0;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      line-height: 24px;
+    }
+    
+    .sidebar-menu a:hover {
+      background-color: #252525;
+      color: #FFD369;
+    }
+    
+    .sidebar-menu img {
+      width: 24px;
+      height: 24px;
+      margin-right: 12px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    /* Settings Section */
+    .sidebar-settings {
+      margin-top: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 15px 0;
+    }
+    
+    .settings-header {
+      padding: 0 20px 10px;
+    }
+    
+    .settings-header h3 {
+      color: #FFD369;
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    
+    .settings-content {
+      padding: 0 20px;
+    }
+    
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .setting-item label {
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    /* Toggle Switch Styles */
+    .toggle-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .toggle-input {
+      display: none;
+    }
+    
+    .toggle-slider {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background-color: #45475a;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background-color: #e0e0e0;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .toggle-input:checked + .toggle-slider {
+      background-color: #FFD369;
+    }
+    
+    .toggle-input:checked + .toggle-slider:before {
+      transform: translateX(30px);
+    }
+    
+    .toggle-labels {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      display: flex;
+      pointer-events: none;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .toggle-label-12h,
+    .toggle-label-24h {
+      color: #666;
+      transition: color 0.3s ease;
+    }
+    
+    .toggle-label-12h {
+      position: absolute;
+      left: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .toggle-label-24h {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    /* Content area */
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      margin-left: 250px;
+    }
+    
+    /* Submenu styles */
+    .has-submenu {
+      position: relative;
+    }
+    
+    .has-submenu > a {
+      padding-right: 40px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    
+    .submenu-toggle {
+      position: absolute;
+      right: 10px;
+      top: 12px;
+      cursor: pointer;
+      padding: 0;
+      color: #e0e0e0;
+      transition: color 0.2s ease;
+      border: 1px solid #555;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 1;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .submenu-toggle:hover {
+      color: #FFD369;
+      border-color: #FFD369;
+      background: rgba(255, 211, 105, 0.1);
+    }
+    
+    .submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      padding-left: 20px;
+      list-style-type: none;
+      background: rgba(15, 15, 15, 1);
+    }
+    
+    .submenu.open {
+      max-height: 200px;
+    }
+    
+    .submenu li a {
+      padding: 8px 20px;
+      font-size: 0.9rem;
+    }
+    
+    
+    /* Mobile styles */
+    /*
+    @media (max-width: 900px) {
+      .main-wrapper {
+        flex-direction: column;
+      }
+      
+      #game-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #333;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      
+      #game-sidebar.sidebar-open {
+        max-height: 400px;
+      }
+      
+      .menu-toggle {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #1e1e1e;
+        border: 1px solid #333;
+        color: #FFD369;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+    }
+    */
+  `;
+  document.head.appendChild(style);
 }

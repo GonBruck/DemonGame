@@ -28,7 +28,7 @@
     "service_worker": "service-worker.js"
   },
   "web_accessible_resources": [{
-    "resources": ["popupstyles.css","wavestyles.css","guitar.mp3"],
+    "resources": ["popupstyles.css","wavestyles.css","guitar.mp3","demon-logo.png"],
     "matches": ["https://demonicscans.org/*"]
   }]
 }
