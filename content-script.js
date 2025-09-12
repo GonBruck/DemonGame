@@ -31,7 +31,28 @@ const extensionPageHandlers = {
   '/stats.php': initStatMods,
   '/pvp.php': initPvPMods,
   // more pages here with their handlers
+  'orc_cull_event.php': initEventMods,
 };
+
+function initEventMods(){
+  initRankingSideBySide()
+}
+function initRankingSideBySide(){
+  document.querySelector('img[alt="Orc King of Grakthar"]').remove()
+
+  var container = document.createElement('div');
+  container.style.cssText=`display:flex;`
+  var panels = document.querySelectorAll('div.panel');
+  var topDmg = panels[panels.length-2]
+  var topKills = panels[panels.length-1]
+  topDmg.querySelector('table').classList.add('event-table')
+  topKills.querySelector('table').classList.add('event-table')
+  topKills.style.marginLeft = "20px"
+  container.appendChild(topDmg)
+  container.appendChild(topKills)
+  
+  document.querySelector('.wrap').appendChild(container)
+}
 
 function initWaveMods() {
   initGateCollapse()
@@ -44,7 +65,7 @@ function initWaveMods() {
 function initPvPMods(){
   initPvPBannerFix()
   initPvPHighlight()
-  initPvPCollapsibles()
+  //initPvPCollapsibles()
 }
 
 function initDashboardTools() {
@@ -417,7 +438,7 @@ function initSideBar(){
       <a href="game_dash.php" style="text-decoration:none;"><h2>Game Menu</h2></a>
     </div>
     <ul class="sidebar-menu">
-      <li><a href="pvp.php?rank=3"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
+      <li><a href="pvp.php?rank=4"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
       <li><a href="orc_cull_event.php"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event</a></li>
       <li><a href="active_wave.php?event=2&wave=6"><img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event Battlefield</a></li>
       <li><a href="active_wave.php?gate=3&wave=5"><img src="images/gates/gate_688e438aba7f24.99262397.webp" alt="Gate"> Gate Grakthar</a></li>

@@ -198,3 +198,13 @@ a {
 button {
   user-select: none;
 }
+
+.event-table td{
+    max-width: 380px;
+    word-wrap: break-word;
+}
+
+.event-table th{
+  max-width: 380px;
+  word-wrap: break-word;
+}
