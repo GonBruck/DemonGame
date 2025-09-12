@@ -45,6 +45,7 @@ function initPvPMods(){
   initPvPBannerFix()
   initPvPHighlight()
   initPvPCollapsibles()
+  initRankDetection()
 }
 
 function initDashboardTools() {
@@ -394,12 +395,14 @@ if (document.querySelector('.game-topbar')) {
       initSideBar(); 
       initDraggableFalse();
       initFaviconFix();
+      initRankDetection();
     });
   } else {
     // Sidebar always first so we dont mess the layout
     initSideBar();
     initDraggableFalse();
     initFaviconFix();
+    initRankDetection();
     //initChatPopup();
     // stats tracker was intended to be the popup with stats
     // and update live and always on top of any website, i left it out for now
@@ -435,6 +438,250 @@ function initChatPopup(){
   
 }
 
+// Enhanced getDynamicRankValue that uses stored values
+function getDynamicRankValue() {
+  // If we're on PvP page, try to read directly
+  if (window.location.href.includes('pvp.php')) {
+    const rankBadgeElement = document.querySelector('span.rank-badge');
+    if (rankBadgeElement) {
+      const rankBadgeValue = rankBadgeElement.innerText.trim();
+      
+      const rankMapping = {
+        'Novice': 1,
+        'Iron': 2,
+        'Bronze': 3,
+        'Silver': 4,
+        'Gold': 5,
+        'Platinum': 6,
+        'Mythril': 7,
+        'Adamantite': 8,
+        'Legendary': 9,
+        'Ascendant': 10
+      };
+      
+      const result = rankMapping[rankBadgeValue] || 4;
+      console.log(`🎯 Direct read from PvP page: ${rankBadgeValue} (${result})`);
+      return result;
+    }
+  }
+  
+  // Otherwise use stored value
+  return getStoredRankValueSync();
+}
+
+// Function to update PvP link with stored rank
+async function updatePvPLinkWithStoredRank() {
+  const rankValue = await getStoredRankValue();
+  
+  // Update the PvP link in sidebar if it exists
+  const pvpLink = document.querySelector('#game-sidebar a[href*="pvp.php"]');
+  if (pvpLink) {
+    const newHref = `pvp.php?rank=${rankValue}`;
+    pvpLink.href = newHref;
+    console.log(`🔗 PvP link updated to rank ${rankValue}`);
+  }
+}
+
+// Function to get and store rank when on PvP page
+function detectAndStoreRank() {
+  // Only run this on PvP pages
+  if (!window.location.href.includes('pvp.php')) {
+    return;
+  }
+  
+  console.log("🎯 On PvP page - detecting rank...");
+  
+  const rankBadgeElement = document.querySelector('span.rank-badge');
+  if (rankBadgeElement) {
+    const rankBadgeValue = rankBadgeElement.innerText.trim();
+    
+    const rankMapping = {
+      'Novice': 1,
+      'Iron': 2,
+      'Bronze': 3,
+      'Silver': 4,
+      'Gold': 5,
+      'Platinum': 6,
+      'Mythril': 7,
+      'Adamantite': 8,
+      'Legendary': 9,
+      'Ascendant': 10
+    };
+    
+    const rankValue = rankMapping[rankBadgeValue] || 4;
+    
+    // Store in chrome.storage
+    chrome.storage.local.set({ 
+      playerRank: rankValue,
+      playerRankName: rankBadgeValue,
+      rankLastUpdated: Date.now()
+    }, () => {
+      console.log(`✅ Rank stored: ${rankBadgeValue} (${rankValue})`);
+    });
+    
+    // Also store in sessionStorage as backup
+    sessionStorage.setItem('playerRank', rankValue);
+    sessionStorage.setItem('playerRankName', rankBadgeValue);
+    
+  } else {
+    console.log("❌ No rank badge found on PvP page");
+    
+    // Try to detect rank from URL parameter as fallback
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentRank = urlParams.get('rank');
+    if (currentRank) {
+      console.log(`ℹ️ Using rank from URL parameter: ${currentRank}`);
+      chrome.storage.local.set({ 
+        playerRank: parseInt(currentRank),
+        rankLastUpdated: Date.now()
+      });
+    }
+  }
+}
+
+// Function to get stored rank value
+async function getStoredRankValue() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['playerRank'], (result) => {
+      if (result.playerRank) {
+        console.log(`📦 Using stored rank: ${result.playerRank}`);
+        resolve(result.playerRank);
+      } else {
+        // Fallback to sessionStorage
+        const sessionRank = sessionStorage.getItem('playerRank');
+        if (sessionRank) {
+          console.log(`📦 Using session rank: ${sessionRank}`);
+          resolve(parseInt(sessionRank));
+        } else {
+          console.log(`📦 No stored rank found, using default: 4`);
+          resolve(4);
+        }
+      }
+    });
+  });
+}
+
+// Synchronous version for immediate use
+function getStoredRankValueSync() {
+  // Try sessionStorage first for immediate access
+  const sessionRank = sessionStorage.getItem('playerRank');
+  if (sessionRank) {
+    console.log(`📦 Using session rank (sync): ${sessionRank}`);
+    return parseInt(sessionRank);
+  }
+  
+  console.log(`📦 No session rank found, using default: 4`);
+  return 4;
+}
+
+// Enhanced getDynamicRankValue that uses stored values
+function getDynamicRankValue() {
+  // If we're on PvP page, try to read directly
+  if (window.location.href.includes('pvp.php')) {
+    const rankBadgeElement = document.querySelector('span.rank-badge');
+    if (rankBadgeElement) {
+      const rankBadgeValue = rankBadgeElement.innerText.trim();
+      
+      const rankMapping = {
+        'Novice': 1,
+        'Iron': 2,
+        'Bronze': 3,
+        'Silver': 4,
+        'Gold': 5,
+        'Platinum': 6,
+        'Mythril': 7,
+        'Adamantite': 8,
+        'Legendary': 9,
+        'Ascendant': 10
+      };
+      
+      const result = rankMapping[rankBadgeValue] || 4;
+      console.log(`🎯 Direct read from PvP page: ${rankBadgeValue} (${result})`);
+      return result;
+    }
+  }
+  
+  // Otherwise use stored value
+  return getStoredRankValueSync();
+}
+
+// Function to update PvP link with stored rank
+async function updatePvPLinkWithStoredRank() {
+  const rankValue = await getStoredRankValue();
+  
+  // Update the PvP link in sidebar if it exists
+  const pvpLink = document.querySelector('#game-sidebar a[href*="pvp.php"]');
+  if (pvpLink) {
+    const newHref = `pvp.php?rank=${rankValue}`;
+    pvpLink.href = newHref;
+    console.log(`🔗 PvP link updated to rank ${rankValue}`);
+  }
+}
+
+// Debug function that works on any page
+function debugStoredRank() {
+  console.log("=== STORED RANK DEBUG START ===");
+  console.log(`Current page: ${window.location.pathname}`);
+  
+  // Check chrome.storage
+  chrome.storage.local.get(['playerRank', 'playerRankName', 'rankLastUpdated'], (result) => {
+    console.log("Chrome storage content:", result);
+    
+    if (result.rankLastUpdated) {
+      const lastUpdate = new Date(result.rankLastUpdated);
+      console.log(`Last updated: ${lastUpdate.toLocaleString()}`);
+    }
+  });
+  
+  // Check sessionStorage
+  const sessionRank = sessionStorage.getItem('playerRank');
+  const sessionRankName = sessionStorage.getItem('playerRankName');
+  console.log(`Session storage rank: ${sessionRank}`);
+  console.log(`Session storage rank name: ${sessionRankName}`);
+  
+  // Test the getDynamicRankValue function
+  const currentRank = getDynamicRankValue();
+  console.log(`getDynamicRankValue() returns: ${currentRank}`);
+  
+  console.log("=== STORED RANK DEBUG END ===");
+}
+
+// Initialize rank detection based on current page
+function initRankDetection() {
+  if (window.location.href.includes('pvp.php')) {
+    // On PvP page - detect and store rank
+    console.log("🎯 Initializing rank detection on PvP page");
+    
+    // Try immediately
+    detectAndStoreRank();
+    
+    // Also try after a delay in case elements load later
+    setTimeout(detectAndStoreRank, 1000);
+    setTimeout(detectAndStoreRank, 3000);
+    
+    // Set up observer for dynamic loading
+    const observer = new MutationObserver(() => {
+      const rankBadge = document.querySelector('span.rank-badge');
+      if (rankBadge) {
+        console.log("🔄 Rank badge detected after DOM change!");
+        detectAndStoreRank();
+        observer.disconnect();
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    
+    setTimeout(() => observer.disconnect(), 10000);
+    
+  } else {
+    // On other pages - just log what we have stored
+    console.log("📄 On non-PvP page - using stored rank");
+    debugStoredRank();
+  }
+}
 
 // Sidebar Initialization
 function initSideBar(){
@@ -464,7 +711,7 @@ function initSideBar(){
       <a href="game_dash.php" style="text-decoration:none;"><h2>Game Menu</h2></a>
     </div>
     <ul class="sidebar-menu">
-      <li><a href="pvp.php?rank=4"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
+      <li><a href="pvp.php?rank=${getDynamicRankValue()}"><img src="/images/pvp/season_1/compressed_menu_pvp_season_1.webp" alt="PvP Arena"> PvP Arena</a></li>
       <li class="has-submenu">
         <a href="orc_cull_event.php">
           <img src="/images/events/orc_cull/banner.webp" alt="War Drums of GRAKTHAR"> Event
@@ -715,6 +962,12 @@ function initSideBar(){
   window.addEventListener('resize', checkMobile);
   // *** END MOBILE ***
   */
+
+  // Update PvP link after sidebar is created (in case rank-badge loads later)
+  /*setTimeout(() => {
+    updatePvPLinkWithStoredRank();
+  }, 500);*/
+
 }
 
 function initStatsTracker() {  

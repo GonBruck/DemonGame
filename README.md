@@ -74,5 +74,6 @@
 * Sidebar
     * Added toggleable submenus
     * Gate Grakthar: link of parent menu point changes automatically from wave 1 to wave 2 if player level reaches 50
+    * PVP Arena: Updates link depending on player rank
 * Added toggleable 24h support for server time display
 * Fix: Favicon: Useing extension icon to fix missing favicon
